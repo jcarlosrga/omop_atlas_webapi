@@ -1,0 +1,43 @@
+version: '3.6'
+services:
+    iris:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        restart: unless-stopped
+        ports:
+            - 52773:52773
+            - 53773:53773
+            - 1972:1972/tcp
+            - 1972:1972/udp
+        volumes:
+            - ./:/irisrun/repo
+        links:
+            - db
+        networks:
+          - psql-pgql
+
+
+    db:
+        container_name: psql
+        restart: always
+        image: psql
+        build:
+          context: ./postgresql
+        #volumes:
+        #  - ./db/data/:/var/lib/postgresql/data
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: 1234  # To be moved to environment file
+            POSTGRES_DATABASE: omop
+            POSTGRES_HOST_AUTH_METHOD: md5
+            POSTGRES_PASSWORD_ENCRYPTION: md5
+        expose:
+          - 5432
+        ports:
+          - 5432:5432
+        networks:
+          - psql-pgql
+          
+networks:
+    psql-pgql:

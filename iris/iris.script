@@ -1,0 +1,53 @@
+// Unexpire passwords for dev mode
+zn "%SYS"
+do ##class(Security.Users).UnExpireUserPasswords("*")
+
+
+// create IRISAPP namespace
+do $SYSTEM.OBJ.Load("/opt/irisbuild/Installer.cls", "ck") 
+set sc = ##class(App.Installer).setup() 
+
+zn "HSLIB"
+
+do ##class(HS.HC.Util.Installer).InstallFoundation("IRISAPP")
+
+zn "IRISAPP"
+
+
+// create SQL Gatevay connection for postgreSQL
+s cls = ##class(%Library.SQLConnection).%New()
+s cls.Name = "postgresJDBC3"
+s cls.URL = "jdbc:postgresql://db:5432/omop"
+s cls.Usr = "postgres"
+s cls.classpath = "/opt/irisbuild/jdbc/postgresql-42.2.18.jar"
+s cls.driver = "org.postgresql.Driver"
+s cls.isJDBC = 1
+s cls.useCOALESCE = 1
+s cls.pwd = "1234"
+s sc = cls.%Save()
+
+
+// import classes
+do $System.OBJ.LoadDir("/opt/irisbuild/src","ck",,1)
+
+// start production automaticaly
+s sc = ##class(Ens.Director).SetAutoStart("OMOP.ProductionMain")
+if sc'=1  w $system.Status.GetErrorText(sc),!
+else  w "Production succesfully started"
+
+
+// import data from csv files
+d ##class(OMOP.Utils.Import).ImportData("/opt/irisbuild/data/")
+
+
+
+// import artificial patients
+do $SYSTEM.SQL.Schema.ImportDDLDir("/opt/irisbuild/ddl/","MSSQL")
+
+w "Load single file 01-prepare-for-webapi.sql",!
+do $SYSTEM.SQL.Schema.ImportDDL("/opt/irisbuild/ddlMySQL/01-prepare-for-webapi.sql",,"MySQL")
+
+w "Load single file 01-prepare-for-webapi.sql",!
+do $SYSTEM.SQL.Schema.ImportDDL("/opt/irisbuild/ddlMySQL/02-achilles.sql",,"MySQL")
+
+halt

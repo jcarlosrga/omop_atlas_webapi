@@ -1,0 +1,17 @@
+1. Install git
+2. Install maven
+3. Install java 8 (openjdk-8-jdk)
+4. Install postgresql
+5. Run prepare-postgres-for-webapi.sql
+6. install iris jdbc driver to maven repo
+mvn install:install-file -Dfile=lib/intersystems-jdbc-3.2.0.jar -DgroupId=com.intersystems -DartifactId=intersystems-jdbc -Dversion=3.2.0 -Dpackaging=jar -DgeneratePom=true
+7. Create WebAPI.war
+mvn clean package -DskipUnitTests -DskipITtests -P webapi-postgresql -f pom.xml
+8. Install Tomcat (download from website and unpack)
+9. Copy war file from target folder to tomcat webapps folder
+10. !!! IRIS installation is omitted. Run achilles.sql on CDM (IRIS).
+11. Run prepare-for-webapi.sql on CDM (IRIS).
+12. Edit add-source.sql to provide correct IRIS address.
+13. Run add-source.sql on webapi postgresql
+14. check http://<webapi>:8080/WebAPI/source/refresh to reflect source changes
+15. Install Atlas according to instructions on their repo.

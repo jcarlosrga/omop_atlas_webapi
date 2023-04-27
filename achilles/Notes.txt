@@ -1,0 +1,20 @@
+There is no SQLUser.visit_detail table
+CREATE TABLE SQLUser.visit_detail
+(
+visit_detail_id BIGINT(19) not null primary key,
+person_id BIGINT(19) not null,
+visit_detail_concept_id BIGINT(19) not null,
+visit_detail_source_concept_id BIGINT(19) not null,
+visit_occurrence_id BIGINT(19) not null,
+visit_detail_start_date TIMESTAMP(23,3) not null,
+visit_detail_end_date TIMESTAMP(23,3),
+care_site_id BIGINT(19)
+);
+
+There is no SQLUser.note table
+CREATE TABLE SQLUser.note
+(
+    note_id BIGINT(19) not null primary key,
+    note_type_CONCEPT_ID BIGINT(19) not null,
+    PERSON_ID BIGINT(19) not null
+);

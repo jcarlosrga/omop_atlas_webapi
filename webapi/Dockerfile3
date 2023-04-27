@@ -1,0 +1,117 @@
+FROM maven:3.8.1-jdk-8 as builder
+
+WORKDIR /tmp/code
+
+ARG MAVEN_PROFILE=webapi-postgresql
+
+COPY lib/intersystems-jdbc-3.2.0.jar /tmp/code/lib/
+
+RUN mvn install:install-file \
+       -Dfile=/tmp/code/lib/intersystems-jdbc-3.2.0.jar \
+       -DgroupId=com.intersystems \
+       -DartifactId=intersystems-jdbc \
+       -Dversion=3.2.0 \
+       -Dpackaging=jar \
+       -DgeneratePom=true
+
+# Download dependencies
+COPY pom.xml /tmp/code/
+RUN mkdir .git \
+    && mvn package \
+    -P ${MAVEN_PROFILE}
+
+
+ARG GIT_BRANCH=unknown
+ARG GIT_COMMIT_ID_ABBREV=unknown
+
+# Compile code and repackage it
+COPY src /tmp/code/src
+RUN mvn clean package \
+	-DskipUnitTests \
+	-DskipITtests \
+	-P ${MAVEN_PROFILE} \
+	-f pom.xml \
+	&& mkdir war \
+    && mv target/WebAPI.war war \	
+#    && mv target/WebAPI.war war \
+    && cd war \
+    && jar -xf WebAPI.war \
+    && rm WebAPI.war
+
+
+# TOMCAT SUPPORT
+FROM tomcat:9.0-alpine
+
+RUN apk --update add gettext
+#RUN rm -rf /usr/local/tomcat/webapps/*
+##COPY --from=builder /tmp/code  /usr/code
+#
+COPY --from=builder /tmp/code/target/  /usr/local/tomcat/webapps/WebAPI
+##COPY tomcat  /usr/local/tomcat/webapps/WebAPI
+#COPY WebAPI  /usr/local/tomcat/webapps/WebAPI
+
+##COPY --from=builder /tmp/ohdsi/webapi/target/WebAPI  /usr/local/tomcat/webapps/WebAPI
+
+COPY catalina.properties /usr/local/tomcat/conf/catalina.properties
+COPY tomcat-users.xml /usr/local/tomcat/conf
+COPY context.xml /usr/local/tomcat/webapps/manager/META-INF
+COPY web.xml /usr/local/tomcat/webapps/manager/WEB-INF
+#COPY WebAPI.war /usr/local/tomcat/webapps
+# COPY /tmp/code/target/WebAPI.war /usr/local/tomcat/webapps
+RUN cp /tmp/code/target/war/WebAPI.war /usr/local/tomcat/webapps
+
+
+
+##RUN mvn package \
+##    -Dgit.branch=${GIT_BRANCH} \
+##    -Dgit.commit.id.abbrev=${GIT_COMMIT_ID_ABBREV} \
+##    -P${MAVEN_PROFILE} \
+##    && mkdir war \
+##    && mv target/WebAPI.war war \
+##    && cd war \
+##    && jar -xf WebAPI.war \
+##    && rm WebAPI.war
+#
+## OHDSI WebAPI and ATLAS web application running as a Spring Boot application with Java 11
+#FROM openjdk:11-jre-slim
+#
+#MAINTAINER Lee Evans - www.ltscomputingllc.com
+#
+## Any Java options to pass along, e.g. memory, garbage collection, etc.
+#ENV JAVA_OPTS=""
+## Additional classpath parameters to pass along. If provided, start with colon ":"
+#ENV CLASSPATH=""
+## Default Java options. The first entry is a fix for when java reads secure random numbers:
+## in a containerized system using /dev/random may reduce entropy too much, causing slowdowns.
+## https://ruleoftech.com/2016/avoiding-jvm-delays-caused-by-random-number-generation
+#ENV DEFAULT_JAVA_OPTS="-Djava.security.egd=file:///dev/./urandom"
+#
+## set working directory to a fixed WebAPI directory
+#WORKDIR /var/lib/ohdsi/webapi
+#
+
+
+
+## deploy the just built OHDSI WebAPI war file
+## copy resources in order of fewest changes to most changes.
+## This way, the libraries step is not duplicated if the dependencies
+## do not change.
+#COPY --from=builder /tmp/code/war/WEB-INF/lib*/* WEB-INF/lib/
+#COPY --from=builder /tmp/code/war/org org
+#COPY --from=builder /tmp/code/war/WEB-INF/classes WEB-INF/classes
+#COPY --from=builder /tmp/code/war/META-INF META-INF
+
+EXPOSE 8080
+#
+## USER 101
+#
+## Directly run the code as a WAR.
+#CMD exec java ${DEFAULT_JAVA_OPTS} ${JAVA_OPTS} \
+#    -cp ".:WebAPI.jar:WEB-INF/lib/*.jar${CLASSPATH}" \
+#    org.springframework.boot.loader.WarLauncher
+#
+
+#RUN rm -rf /usr/local/tomcat/webapps/WebAPI
+
+
+CMD catalina.sh run > /tmp/clog.log
