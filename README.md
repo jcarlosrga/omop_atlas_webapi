@@ -10,7 +10,7 @@
     ```
 1. Decompress the CSV data files:
     ```
-    cd iris/data
+    cd omop_atlas_webapi/iris/data/
     gunzip *
     ```
 2. In the following files, replace the IP address `192.168.1.8` with the IP adress of the PC where you launch this container DO not use localhost or 127.0.0.1 !!!
