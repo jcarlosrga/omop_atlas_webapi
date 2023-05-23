@@ -6,7 +6,7 @@
 
 1. Download a project using command:
     ```
-    git clone https://gitlab.com/i3335/omop_atlas_webapi.git
+    git clone https://github.com/intersystems-community/omop_atlas_webapi.git
     ```
 1. Decompress the CSV data files:
     ```
