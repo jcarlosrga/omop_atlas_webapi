@@ -1,5 +1,5 @@
 --
--- ARTIFITIAL DATA
+-- ARTIFICIAL DATA
 --
 
 --
