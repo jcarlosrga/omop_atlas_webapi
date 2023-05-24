@@ -21,7 +21,56 @@ ClassMethod ImportData(dataDir = "")
 			set fileName = $order(LOOKUP("vocabularies",fileName)) 
 			quit:fileName=""
 			set className = $get(LOOKUP("vocabularies",fileName))
-			do ..ImportFile(dataDir,fileName,className,1)
+			w "fileName:  "_fileName,!
+			w "className:  "_className,!
+
+			if fileName = "CONCEPT_ANCESTOR" {
+				set tblName = "SQLUser.concept_ancestor"
+				set lc = "LOAD BULK %NOJOURN DATA FROM FILE"
+				set lc = lc_" '"_dataDir_fileName_"' INTO "_tblName
+				set lc = lc_" USING { ""from"": {""file"": {""header"": true, ""columnseparator"": "",""}}}"
+
+				set tStatement = ##class(%SQL.Statement).%New()
+				set qStatus = tStatement.%Prepare(lc)
+				if qStatus'=1 {write "%Prepare failed:" do $System.Status.DisplayError(qStatus) quit}
+				set rset = tStatement.%Execute()
+			}
+			if fileName = "CONCEPT_RELATIONSHIP" {
+				set tblName = "SQLUser.concept_relationship"
+				set lc = "LOAD BULK %NOJOURN DATA FROM FILE"
+				set lc = lc_" '"_dataDir_fileName_"' INTO "_tblName
+				set lc = lc_" USING { ""from"": {""file"": {""header"": true, ""columnseparator"": "",""}}}"
+
+				set tStatement = ##class(%SQL.Statement).%New()
+				set qStatus = tStatement.%Prepare(lc)
+				if qStatus'=1 {write "%Prepare failed:" do $System.Status.DisplayError(qStatus) quit}
+				set rset = tStatement.%Execute()
+			} 
+			#; if fileName = "CONCEPT_SYNONYM" {
+			#; 	set tblName = "SQLUser.concept_synonym"
+			#; 	set lc = "LOAD BULK %NOJOURN DATA FROM FILE"
+			#; 	set lc = lc_" '"_dataDir_fileName_"' INTO "_tblName
+			#; 	set lc = lc_" USING { ""from"": {""file"": {""header"": true, ""columnseparator"": "",""}}}"
+
+			#; 	set tStatement = ##class(%SQL.Statement).%New()
+			#; 	set qStatus = tStatement.%Prepare(lc)
+			#; 	if qStatus'=1 {write "%Prepare failed:" do $System.Status.DisplayError(qStatus) quit}
+			#; 	set rset = tStatement.%Execute()
+			#; }
+			if fileName = "CONCEPT" {
+				set tblName = "SQLUser.concept"
+				set lc = "LOAD BULK %NOJOURN DATA FROM FILE"
+				set lc = lc_" '"_dataDir_fileName_"' INTO "_tblName
+				set lc = lc_" USING { ""from"": {""file"": {""header"": true, ""columnseparator"": ""\t""}}}"
+
+				set tStatement = ##class(%SQL.Statement).%New()
+				set qStatus = tStatement.%Prepare(lc)
+				if qStatus'=1 {write "%Prepare failed:" do $System.Status.DisplayError(qStatus) quit}
+				set rset = tStatement.%Execute()
+			}
+			else {
+				do ..ImportFile(dataDir,fileName,className,1)
+			}
 		}
 
 		; lookup tables
@@ -34,7 +83,7 @@ ClassMethod ImportData(dataDir = "")
 		}
 		
 		
-		; artifitial dataset
+		; artificial dataset
 		set fileName=""
 		for {
 			set fileName = $order(LOOKUP("artifitial_dataset",fileName))
