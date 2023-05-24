@@ -27,7 +27,7 @@ ClassMethod ImportData(dataDir = "")
 			if fileName = "CONCEPT_ANCESTOR" {
 				set tblName = "SQLUser.concept_ancestor"
 				set lc = "LOAD BULK %NOJOURN DATA FROM FILE"
-				set lc = lc_" '"_dataDir_fileName_"' INTO "_tblName
+				set lc = lc_" '"_dataDir_fileName_".csv' INTO "_tblName
 				set lc = lc_" USING { ""from"": {""file"": {""header"": true, ""columnseparator"": "",""}}}"
 
 				set tStatement = ##class(%SQL.Statement).%New()
@@ -35,10 +35,10 @@ ClassMethod ImportData(dataDir = "")
 				if qStatus'=1 {write "%Prepare failed:" do $System.Status.DisplayError(qStatus) quit}
 				set rset = tStatement.%Execute()
 			}
-			if fileName = "CONCEPT_RELATIONSHIP" {
+			elseif fileName = "CONCEPT_RELATIONSHIP" {
 				set tblName = "SQLUser.concept_relationship"
 				set lc = "LOAD BULK %NOJOURN DATA FROM FILE"
-				set lc = lc_" '"_dataDir_fileName_"' INTO "_tblName
+				set lc = lc_" '"_dataDir_fileName_".csv' INTO "_tblName
 				set lc = lc_" USING { ""from"": {""file"": {""header"": true, ""columnseparator"": "",""}}}"
 
 				set tStatement = ##class(%SQL.Statement).%New()
@@ -46,10 +46,10 @@ ClassMethod ImportData(dataDir = "")
 				if qStatus'=1 {write "%Prepare failed:" do $System.Status.DisplayError(qStatus) quit}
 				set rset = tStatement.%Execute()
 			} 
-			#; if fileName = "CONCEPT_SYNONYM" {
+			#; elseif fileName = "CONCEPT_SYNONYM" {
 			#; 	set tblName = "SQLUser.concept_synonym"
 			#; 	set lc = "LOAD BULK %NOJOURN DATA FROM FILE"
-			#; 	set lc = lc_" '"_dataDir_fileName_"' INTO "_tblName
+			#; 	set lc = lc_" '"_dataDir_fileName_".csv' INTO "_tblName
 			#; 	set lc = lc_" USING { ""from"": {""file"": {""header"": true, ""columnseparator"": "",""}}}"
 
 			#; 	set tStatement = ##class(%SQL.Statement).%New()
@@ -57,10 +57,10 @@ ClassMethod ImportData(dataDir = "")
 			#; 	if qStatus'=1 {write "%Prepare failed:" do $System.Status.DisplayError(qStatus) quit}
 			#; 	set rset = tStatement.%Execute()
 			#; }
-			if fileName = "CONCEPT" {
+			elseif fileName = "CONCEPT" {
 				set tblName = "SQLUser.concept"
 				set lc = "LOAD BULK %NOJOURN DATA FROM FILE"
-				set lc = lc_" '"_dataDir_fileName_"' INTO "_tblName
+				set lc = lc_" '"_dataDir_fileName_".csv' INTO "_tblName
 				set lc = lc_" USING { ""from"": {""file"": {""header"": true, ""columnseparator"": ""\t""}}}"
 
 				set tStatement = ##class(%SQL.Statement).%New()
