@@ -30,8 +30,15 @@ ClassMethod ImportData(dataDir = "")
 				set lc = lc_" '"_dataDir_fileName_".csv' INTO "_tblName
 				set lc = lc_" USING { ""from"": {""file"": {""header"": true, ""columnseparator"": "",""}}}"
 
+				w "Loading: "_lc,!
 				set tStatement = ##class(%SQL.Statement).%New()
 				set qStatus = tStatement.%Prepare(lc)
+				if qStatus'=1 {write "%Prepare failed:" do $System.Status.DisplayError(qStatus) quit}
+				set rset = tStatement.%Execute()
+				set tStatement = ##class(%SQL.Statement).%New()
+
+				w "Indexing: "_tblName,!
+				set qStatus = tStatement.%Prepare("BUILD INDEX FOR TABLE "_tblName)
 				if qStatus'=1 {write "%Prepare failed:" do $System.Status.DisplayError(qStatus) quit}
 				set rset = tStatement.%Execute()
 			}
@@ -41,21 +48,33 @@ ClassMethod ImportData(dataDir = "")
 				set lc = lc_" '"_dataDir_fileName_".csv' INTO "_tblName
 				set lc = lc_" USING { ""from"": {""file"": {""header"": true, ""columnseparator"": "",""}}}"
 
+				w "Loading: "_lc,!
 				set tStatement = ##class(%SQL.Statement).%New()
 				set qStatus = tStatement.%Prepare(lc)
 				if qStatus'=1 {write "%Prepare failed:" do $System.Status.DisplayError(qStatus) quit}
 				set rset = tStatement.%Execute()
+
+				w "Indexing: "_tblName,!
+				set qStatus = tStatement.%Prepare("BUILD INDEX FOR TABLE "_tblName)
+				if qStatus'=1 {write "%Prepare failed:" do $System.Status.DisplayError(qStatus) quit}
+				set rset = tStatement.%Execute()
 			} 
 			#; elseif fileName = "CONCEPT_SYNONYM" {
-			#; 	set tblName = "SQLUser.concept_synonym"
-			#; 	set lc = "LOAD BULK %NOJOURN DATA FROM FILE"
-			#; 	set lc = lc_" '"_dataDir_fileName_".csv' INTO "_tblName
-			#; 	set lc = lc_" USING { ""from"": {""file"": {""header"": true, ""columnseparator"": "",""}}}"
+				#; 	set tblName = "SQLUser.concept_synonym"
+				#; 	set lc = "LOAD BULK %NOJOURN DATA FROM FILE"
+				#; 	set lc = lc_" '"_dataDir_fileName_".csv' INTO "_tblName
+				#; 	set lc = lc_" USING { ""from"": {""file"": {""header"": true, ""columnseparator"": "",""}}}"
 
-			#; 	set tStatement = ##class(%SQL.Statement).%New()
-			#; 	set qStatus = tStatement.%Prepare(lc)
-			#; 	if qStatus'=1 {write "%Prepare failed:" do $System.Status.DisplayError(qStatus) quit}
-			#; 	set rset = tStatement.%Execute()
+				#; w "Loading: "_lc,!
+				#; set tStatement = ##class(%SQL.Statement).%New()
+				#; 	set qStatus = tStatement.%Prepare(lc)
+				#; 	if qStatus'=1 {write "%Prepare failed:" do $System.Status.DisplayError(qStatus) quit}
+				#; 	set rset = tStatement.%Execute()
+
+				#; w "Indexing: "_tblName,!
+				#; set qStatus = tStatement.%Prepare("BUILD INDEX FOR TABLE "_tblName)
+				#; if qStatus'=1 {write "%Prepare failed:" do $System.Status.DisplayError(qStatus) quit}
+				#; set rset = tStatement.%Execute()
 			#; }
 			elseif fileName = "CONCEPT" {
 				set tblName = "SQLUser.concept"
@@ -63,8 +82,14 @@ ClassMethod ImportData(dataDir = "")
 				set lc = lc_" '"_dataDir_fileName_".csv' INTO "_tblName
 				set lc = lc_" USING { ""from"": {""file"": {""header"": true, ""columnseparator"": ""\t""}}}"
 
+				w "Loading: "_lc,!
 				set tStatement = ##class(%SQL.Statement).%New()
 				set qStatus = tStatement.%Prepare(lc)
+				if qStatus'=1 {write "%Prepare failed:" do $System.Status.DisplayError(qStatus) quit}
+				set rset = tStatement.%Execute()
+
+				w "Indexing: "_tblName,!
+				set qStatus = tStatement.%Prepare("BUILD INDEX FOR TABLE "_tblName)
 				if qStatus'=1 {write "%Prepare failed:" do $System.Status.DisplayError(qStatus) quit}
 				set rset = tStatement.%Execute()
 			}
@@ -86,9 +111,9 @@ ClassMethod ImportData(dataDir = "")
 		; artificial dataset
 		set fileName=""
 		for {
-			set fileName = $order(LOOKUP("artifitial_dataset",fileName))
+			set fileName = $order(LOOKUP("artificial_dataset",fileName))
 			quit:fileName=""
-			set className = $get(LOOKUP("artifitial_dataset",fileName))
+			set className = $get(LOOKUP("artificial_dataset",fileName))
 			do ..ImportFile(dataDir,fileName,className,0)
 		}
 		W !!,"Import data complete",!	
@@ -136,7 +161,7 @@ INITLOOKUP
 	S LOOKUP(group,"Lookup radres")="User.lookUpTbl"
 	S LOOKUP(group,"Labs item")="User.lookUpTbl"
 
-	set group = "artifitial_dataset"
+	set group = "artificial_dataset"
 	S LOOKUP(group,"care_site")="User.caresite"
 	S LOOKUP(group,"cdm_source")="User.cdmsource"
 	S LOOKUP(group,"condition_era")="User.conditionera"
