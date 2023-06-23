@@ -4,7 +4,6 @@ USER root
 
 WORKDIR /opt/irisbuild
 
-RUN cat data.tar.gz.parta* >data.tar.gz
 ADD data.tar.gz data
 
 COPY src src
@@ -15,7 +14,6 @@ COPY Installer.cls Installer.cls
 COPY module.xml module.xml
 COPY iris.script iris.script
 
-RUN cat db/irisapp.tar.gz.parta* >db/irisapp.tar.gz
 ADD db/irisapp.tar.gz db/irisapp
 
 RUN chown -R ${ISC_PACKAGE_MGRUSER}:${ISC_PACKAGE_IRISGROUP} /opt/irisbuild

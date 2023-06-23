@@ -8,7 +8,13 @@
     ```
     git clone https://github.com/intersystems-community/omop_atlas_webapi.git
     ```
-2. In the following files, replace the IP address `192.168.1.8` with the IP adress of the PC where you launch this container DO not use localhost or 127.0.0.1 !!!
+2. Merge parts of compressed IRIS.DAT archives and CSV files:
+    ```
+    cd omop_atlas_webapi/iris/
+    cat data.tar.gz.parta* > data.tar.gz
+	cat db/irisapp.tar.gz.parta* > db/irisapp.tar.gz
+    ```
+3. In the following files, replace the IP address `192.168.1.8` with the IP adress of the PC where you launch this container DO not use localhost or 127.0.0.1 !!!
    - [ ] /webapi/src/main/resources/db/migration/postgresql/V9.9.9__artificial_dataset.sql
    - [ ] /webapi/pom.xml
    - [ ] /atlas/docker/config-local.js
