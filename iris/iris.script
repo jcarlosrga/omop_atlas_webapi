@@ -37,7 +37,7 @@ else  w "Production succesfully started"
 
 
 // import data from csv files
-d ##class(OMOP.Utils.Import).ImportData("/opt/irisbuild/data/")
+//d ##class(OMOP.Utils.Import).ImportData("/opt/irisbuild/data/")
 
 
 
