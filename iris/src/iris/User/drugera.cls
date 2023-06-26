@@ -8,9 +8,9 @@ Property personid As %Library.BigInt [ Required, SqlColumnNumber = 3, SqlFieldNa
 
 Property drugconceptid As %Library.Integer(MAXVAL = 2147483647, MINVAL = -2147483648) [ Required, SqlColumnNumber = 4, SqlFieldName = drug_concept_id ];
 
-Property drugerastartdate As %Library.TimeStamp [ Required, SqlColumnNumber = 5, SqlFieldName = drug_era_start_date ];
+Property drugerastartdate As %Library.TimeStamp [ Required, SqlColumnNumber = 5, SqlFieldName = drug_era_start_datetime ];
 
-Property drugeraenddate As %Library.TimeStamp [ Required, SqlColumnNumber = 6, SqlFieldName = drug_era_end_date ];
+Property drugeraenddate As %Library.TimeStamp [ Required, SqlColumnNumber = 6, SqlFieldName = drug_era_end_datetime ];
 
 Property drugexposurecount As %Library.Integer(MAXVAL = 2147483647, MINVAL = -2147483648) [ SqlColumnNumber = 7, SqlFieldName = drug_exposure_count ];
 

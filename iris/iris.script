@@ -37,17 +37,17 @@ else  w "Production succesfully started"
 
 
 // import data from csv files
-d ##class(OMOP.Utils.Import).ImportData("/opt/irisbuild/data/")
+//d ##class(OMOP.Utils.Import).ImportData("/opt/irisbuild/data/")
 
 
 
 // import artificial patients
-do $SYSTEM.SQL.Schema.ImportDDLDir("/opt/irisbuild/ddl/","MSSQL")
+//do $SYSTEM.SQL.Schema.ImportDDLDir("/opt/irisbuild/ddl/","MSSQL")
 
-w "Load single file 01-prepare-for-webapi.sql",!
-do $SYSTEM.SQL.Schema.ImportDDL("/opt/irisbuild/ddlMySQL/01-prepare-for-webapi.sql",,"MySQL")
+//w "Load single file 01-prepare-for-webapi.sql",!
+//do $SYSTEM.SQL.Schema.ImportDDL("/opt/irisbuild/ddlMySQL/01-prepare-for-webapi.sql",,"MySQL")
 
-w "Load single file 01-prepare-for-webapi.sql",!
-do $SYSTEM.SQL.Schema.ImportDDL("/opt/irisbuild/ddlMySQL/02-achilles.sql",,"MySQL")
+//w "Load single file 01-prepare-for-webapi.sql",!
+//do $SYSTEM.SQL.Schema.ImportDDL("/opt/irisbuild/ddlMySQL/02-achilles.sql",,"MySQL")
 
 halt

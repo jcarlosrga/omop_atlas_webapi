@@ -4,7 +4,7 @@ USER root
 
 WORKDIR /opt/irisbuild
 
-COPY data data
+ADD data.tar.gz data
 
 COPY src src
 COPY ddl ddl
@@ -13,6 +13,8 @@ COPY jdbc jdbc
 COPY Installer.cls Installer.cls
 COPY module.xml module.xml
 COPY iris.script iris.script
+
+ADD db/irisapp.tar.gz db/irisapp
 
 RUN chown -R ${ISC_PACKAGE_MGRUSER}:${ISC_PACKAGE_IRISGROUP} /opt/irisbuild
 USER ${ISC_PACKAGE_MGRUSER}
