@@ -1,19 +1,31 @@
 package org.ohdsi.webapi.service;
 
+import com.odysseusinc.arachne.commons.types.DBMSType;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.DataSourceUnsecuredDTO;
 import com.odysseusinc.datasourcemanager.krblogin.KerberosService;
 import com.odysseusinc.datasourcemanager.krblogin.KrbConfig;
 import com.odysseusinc.datasourcemanager.krblogin.RuntimeServiceMode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.UnauthorizedException;
+import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
+import org.ohdsi.analysis.pathway.design.PathwayAnalysis;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.IExecutionInfo;
+import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.common.sensitiveinfo.AbstractAdminService;
+import org.ohdsi.webapi.conceptset.ConceptSet;
+import org.ohdsi.webapi.conceptset.ConceptSetComparison;
 import org.ohdsi.webapi.conceptset.ConceptSetItemRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetRepository;
 import org.ohdsi.webapi.exception.BadRequestAtlasException;
+import org.ohdsi.webapi.ircalc.IncidenceRateAnalysis;
 import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.model.CommonEntityExt;
+import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
+import org.ohdsi.webapi.reusable.domain.Reusable;
 import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.service.dto.CommonEntityDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
@@ -23,6 +35,7 @@ import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceHelper;
 import org.ohdsi.webapi.source.SourceRepository;
+import org.ohdsi.webapi.tag.TagSecurityUtils;
 import org.ohdsi.webapi.tag.TagService;
 import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
@@ -35,9 +48,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
 import java.io.File;
 import java.io.IOException;
@@ -45,12 +62,17 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public abstract class AbstractDaoService extends AbstractAdminService {
@@ -73,7 +95,7 @@ public abstract class AbstractDaoService extends AbstractAdminService {
   private String cdmVersion;
 
   @Value("${jdbc.suppressInvalidApiException}")
-  private boolean suppressApiException;
+  protected boolean suppressApiException;
 
   @Autowired
   private JdbcTemplate jdbcTemplate;
@@ -157,6 +179,24 @@ public abstract class AbstractDaoService extends AbstractAdminService {
 
   public CancelableJdbcTemplate getSourceJdbcTemplate(Source source) {
 
+    DriverManagerDataSource dataSource = getDriverManagerDataSource(source);
+    CancelableJdbcTemplate jdbcTemplate = new CancelableJdbcTemplate(dataSource);
+    jdbcTemplate.setSuppressApiException(suppressApiException);
+    return jdbcTemplate;
+  }
+
+  public <T> T executeInTransaction(Source source, Function<JdbcTemplate, TransactionCallback<T>> callbackFunction) {
+    DriverManagerDataSource dataSource = getDriverManagerDataSource(source);
+    CancelableJdbcTemplate jdbcTemplate = new CancelableJdbcTemplate(dataSource);
+    jdbcTemplate.setSuppressApiException(suppressApiException);
+    DataSourceTransactionManager transactionManager = new DataSourceTransactionManager(dataSource);
+    TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
+    transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+
+    return transactionTemplate.execute(callbackFunction.apply(jdbcTemplate));
+  }
+
+  private DriverManagerDataSource getDriverManagerDataSource(Source source) {
     DataSourceUnsecuredDTO dataSourceData = DataSourceDTOParser.parseDTO(source);
     if (dataSourceData.getUseKerberos()) {
       loginToKerberos(dataSourceData);
@@ -173,9 +213,13 @@ public abstract class AbstractDaoService extends AbstractAdminService {
     } else {
       dataSource = new DriverManagerDataSource(connectionString);
     }
-    CancelableJdbcTemplate jdbcTemplate = new CancelableJdbcTemplate(dataSource);
-    jdbcTemplate.setSuppressApiException(suppressApiException);
-    return jdbcTemplate;
+    if (DBMSType.SNOWFLAKE.getValue().equalsIgnoreCase(source.getSourceDialect())) {
+      if (dataSource.getConnectionProperties() == null) {
+        dataSource.setConnectionProperties(new Properties());
+      }
+      dataSource.getConnectionProperties().setProperty("CLIENT_RESULT_COLUMN_CASE_INSENSITIVE", "true");
+    }
+    return dataSource;
   }
 
   private void loginToKerberos(DataSourceUnsecuredDTO dataSourceData) {
@@ -314,25 +358,44 @@ public abstract class AbstractDaoService extends AbstractAdminService {
   protected String getCurrentUserLogin() {
     return security.getSubject();
   }
+  
+  protected PermissionService getPermissionService() {
+    return this.permissionService;
+  }
 
-  protected void assignTag(CommonEntityExt<?> entity, int tagId, boolean isPermissionProtected){
+  protected void assignTag(CommonEntityExt<?> entity, int tagId) {
     if (Objects.nonNull(entity)) {
       Tag tag = tagService.getById(tagId);
       if (Objects.nonNull(tag)) {
-        if (isPermissionProtected != tag.isPermissionProtected()) {
-          throw new BadRequestAtlasException("Wrong endpoint is used for assigning tag");
+        if (tag.isPermissionProtected() && !hasPermissionToAssignProtectedTags(entity, "post")) {
+          throw new UnauthorizedException(String.format("No permission to assign protected tag '%s' to %s (id=%s).",
+                  tag.getName(), entity.getClass().getSimpleName(), entity.getId()));
         }
+
+        // unassign tags from the same group if group marked as multi_selection=false
+        tag.getGroups().stream().findFirst().ifPresent(group -> {
+          if (!group.isMultiSelection()) {
+            entity.getTags().forEach(t -> {
+              if (t.getGroups().stream().anyMatch(g -> g.getId().equals(group.getId()))) {
+                unassignTag(entity, t.getId());
+              }
+            });
+          }
+        });
+
+
         entity.getTags().add(tag);
       }
     }
   }
 
-  protected void unassignTag(CommonEntityExt<?> entity, int tagId, boolean isPermissionProtected) {
+  protected void unassignTag(CommonEntityExt<?> entity, int tagId) {
     if (Objects.nonNull(entity)) {
       Tag tag = tagService.getById(tagId);
       if (Objects.nonNull(tag)) {
-        if (isPermissionProtected != tag.isPermissionProtected()) {
-          throw new BadRequestAtlasException("Wrong endpoint is used for unassigning tag");
+        if (tag.isPermissionProtected() && !hasPermissionToAssignProtectedTags(entity, "delete")) {
+          throw new UnauthorizedException(String.format("No permission to unassign protected tag '%s' from %s (id=%s).",
+                  tag.getName(), entity.getClass().getSimpleName(), entity.getId()));
         }
         Set<Tag> tags = entity.getTags().stream()
                 .filter(t -> t.getId() != tagId)
@@ -340,6 +403,14 @@ public abstract class AbstractDaoService extends AbstractAdminService {
         entity.setTags(tags);
       }
     }
+  }
+
+  private boolean hasPermissionToAssignProtectedTags(final CommonEntityExt<?> entity, final String method) {
+    if (!isSecured()) {
+      return true;
+    }
+
+    return TagSecurityUtils.checkPermission(TagSecurityUtils.getAssetName(entity), method);
   }
 
   protected void checkOwnerOrAdmin(UserEntity owner) {
@@ -351,6 +422,19 @@ public abstract class AbstractDaoService extends AbstractAdminService {
     Long ownerId = Objects.nonNull(owner) ? owner.getId() : null;
 
     if (!(user.getId().equals(ownerId) || isAdmin())) {
+      throw new ForbiddenException();
+    }
+  }
+
+  protected void checkOwnerOrAdminOrModerator(UserEntity owner) {
+    if (security instanceof DisabledSecurity) {
+      return;
+    }
+
+    UserEntity user = getCurrentUser();
+    Long ownerId = Objects.nonNull(owner) ? owner.getId() : null;
+
+    if (!(user.getId().equals(ownerId) || isAdmin() || isModerator())) {
       throw new ForbiddenException();
     }
   }

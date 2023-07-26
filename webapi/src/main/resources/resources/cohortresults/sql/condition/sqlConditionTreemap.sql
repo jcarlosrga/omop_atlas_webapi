@@ -1,5 +1,5 @@
 select  concept_hierarchy.concept_id,
-	CONCAT(
+	STRING(
 		coalesce(concept_hierarchy.level4_concept_name,'NA'), '||',
 		coalesce(concept_hierarchy.level3_concept_name,'NA'), '||',
 		coalesce(concept_hierarchy.level2_concept_name,'NA'), '||',

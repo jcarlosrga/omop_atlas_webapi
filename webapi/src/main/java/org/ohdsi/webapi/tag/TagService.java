@@ -1,12 +1,13 @@
 package org.ohdsi.webapi.tag;
 
+import org.apache.shiro.SecurityUtils;
 import org.glassfish.jersey.internal.util.Producer;
 import org.ohdsi.webapi.service.AbstractDaoService;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.tag.domain.TagInfo;
 import org.ohdsi.webapi.tag.domain.TagType;
 import org.ohdsi.webapi.tag.dto.TagDTO;
+import org.ohdsi.webapi.tag.dto.AssignmentPermissionsDTO;
 import org.ohdsi.webapi.tag.repository.TagRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,15 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import javax.ws.rs.ForbiddenException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -72,7 +65,7 @@ public class TagService extends AbstractDaoService {
                 .filter(Tag::isAllowCustom)
                 .count() == groups.size();
 
-        if (!allowCustom) {
+        if (this.getPermissionService().isSecurityEnabled() && !SecurityUtils.getSubject().isPermitted("tag:management") && !allowCustom) {
             throw new IllegalArgumentException("Tag can be added only to groups that allows to do it");
         }
 
@@ -119,8 +112,7 @@ public class TagService extends AbstractDaoService {
     public TagDTO update(Integer id, TagDTO entity) {
         Tag existing = tagRepository.findOne(id);
 
-        checkOwnerOrAdmin(existing.getCreatedBy().getId());
-        checkType(existing.getType());
+        checkOwnerOrAdmin(existing.getCreatedBy());
 
         Tag toUpdate = this.conversionService.convert(entity, Tag.class);
 
@@ -142,23 +134,9 @@ public class TagService extends AbstractDaoService {
     public void delete(Integer id) {
         Tag existing = tagRepository.findOne(id);
 
-        checkOwnerOrAdmin(existing.getCreatedBy().getId());
-        checkType(existing.getType());
+        checkOwnerOrAdmin(existing.getCreatedBy());
 
         tagRepository.delete(id);
-    }
-
-    private void checkOwnerOrAdmin(Long tagOwnerId) {
-        UserEntity user = getCurrentUser();
-        if (!(user.getId().equals(tagOwnerId) || isAdmin())) {
-            throw new ForbiddenException();
-        }
-    }
-
-    private void checkType(TagType type) {
-        if (!TagType.CUSTOM.equals(type)) {
-            throw new IllegalArgumentException("Only custom tags can be processed");
-        }
     }
 
     private Tag save(Tag tag) {
@@ -198,7 +176,7 @@ public class TagService extends AbstractDaoService {
                                 Map<Integer, TagDTO> infoMap) {
         List<TagInfo> tagInfos = infoProducer.call();
         tagInfos.forEach(info -> {
-            int id = info.getTag().getId();
+            int id = info.getId();
             TagDTO dto = infoMap.get(id);
             if (Objects.isNull(dto)) {
                 infoMap.put(id, new TagDTO());
@@ -228,5 +206,13 @@ public class TagService extends AbstractDaoService {
             groupIds.add(g.getId());
             findParentGroup(g.getGroups(), groupIds);
         });
+    }
+
+    public AssignmentPermissionsDTO getAssignmentPermissions() {
+        final AssignmentPermissionsDTO tagPermission = new AssignmentPermissionsDTO();
+        tagPermission.setAnyAssetMultiAssignPermitted(isAdmin());
+        tagPermission.setCanAssignProtectedTags(!isSecured() || TagSecurityUtils.canAssingProtectedTags());
+        tagPermission.setCanUnassignProtectedTags(!isSecured() || TagSecurityUtils.canUnassingProtectedTags());
+        return tagPermission;
     }
 }

@@ -3,7 +3,7 @@ with breakdown (subject_id, cohort_start_date, cohort_end_date, gender,age,condi
     from (
 			select subject_id, cohort_start_date, cohort_end_date,
 				gc.concept_name as gender,
-				CONCAT(
+				STRING(
 				  cast(floor((year(cohort_start_date) - year_of_birth) / 10) * 10 as varchar(5)), '-',
 					cast(floor((year(cohort_start_date) - year_of_birth) / 10 + 1) * 10 - 1 as varchar(5))
 				) as age,

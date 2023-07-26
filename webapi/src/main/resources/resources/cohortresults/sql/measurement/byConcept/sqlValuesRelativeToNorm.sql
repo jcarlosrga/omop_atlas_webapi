@@ -1,7 +1,7 @@
 select c1.concept_id as observation_concept_id, 
 	c1.concept_name as observation_concept_name,
 	c2.concept_id as concept_id,
-	CONCAT(c2.concept_name, ': ', hr1.stratum_3) as concept_name,
+	STRING(c2.concept_name, ': ', hr1.stratum_3) as concept_name,
 	hr1.count_value as count_value
 from @ohdsi_database_schema.heracles_results hr1
 	inner join @cdm_database_schema.concept c1

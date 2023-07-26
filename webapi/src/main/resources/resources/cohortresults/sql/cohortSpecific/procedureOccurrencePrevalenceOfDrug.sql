@@ -14,7 +14,7 @@ select   concept_hierarchy.concept_id,
 	isNull(concept_hierarchy.level2_concept_name,'NA') as level2_concept_name,
 	isNull(concept_hierarchy.level3_concept_name,'NA') as level3_concept_name,
 	isNull(concept_hierarchy.level4_concept_name,'NA') as level4_concept_name,
-	CONCAT(
+	STRING(
 	  isNull(concept_hierarchy.level4_concept_name,'NA'), '||',
 	  isNull(concept_hierarchy.level3_concept_name,'NA'), '||',
 	  isNull(concept_hierarchy.level2_concept_name,'NA'), '||',
@@ -47,7 +47,7 @@ inner join
 	 from
 		(
 		select c1.concept_id, 
-			CONCAT(v1.vocabulary_name, ' ', c1.concept_code, ': ', c1.concept_name) as proc_concept_name
+			STRING(v1.vocabulary_name, ' ', c1.concept_code, ': ', c1.concept_name) as proc_concept_name
 		from @cdm_database_schema.concept c1
 			inner join @cdm_database_schema.vocabulary v1
 			on c1.vocabulary_id = v1.vocabulary_id

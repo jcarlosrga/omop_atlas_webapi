@@ -1,4 +1,4 @@
-select CONCAT(
+select STRING(
   cast(cast(CASE WHEN isNumeric(num.stratum_3) = 1 THEN num.stratum_3 ELSE null END AS INT) * 10 AS VARCHAR(11)), '-',
   cast((cast(CASE WHEN isNumeric(num.stratum_3) = 1 THEN num.stratum_3 ELSE null END AS INT) + 1) * 10 - 1 AS VARCHAR(11))) as trellis_name, --age decile
 	c2.concept_name as series_name,  --gender
