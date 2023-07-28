@@ -18,3 +18,4 @@ INNER JOIN
 ON aa1.analysis_id = ar1.analysis_id
 WHERE aa1.analysis_id = 1
 
+ORDER BY attribute_name DESC

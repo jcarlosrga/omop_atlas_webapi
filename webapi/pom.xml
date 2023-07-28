@@ -6,7 +6,7 @@
   <groupId>org.ohdsi</groupId>
   <artifactId>WebAPI</artifactId>
   <packaging>war</packaging>
-  <version>2.11.1-SNAPSHOT</version>
+  <version>2.14.0-SNAPSHOT</version>
   <name>WebAPI</name>
   <properties>
     <build.number>${BUILD_NUMBER}</build.number>
@@ -18,22 +18,22 @@
     <waffle.version>2.2.1</waffle.version>
     <jna.version>5.5.0</jna.version>
     <hibernate.version>5.4.2.Final</hibernate.version>
-    <postgresql.version>42.3.3</postgresql.version>
-    <bouncycastle.version>1.68</bouncycastle.version>
-    <shiro.version>1.8.0</shiro.version>
+    <postgresql.version>42.3.7</postgresql.version>
+    <bouncycastle.version>1.69</bouncycastle.version>
+    <shiro.version>1.10.1</shiro.version>
     <dom4j.version>2.1.3</dom4j.version>
-    <hydra.version>0.2.0</hydra.version>
+    <hydra.version>0.4.0</hydra.version>
     <featureExtraction.version>3.2.0</featureExtraction.version>
+    <tomcat.embed.version>8.5.87</tomcat.embed.version>
 
     <commons-fileupload.version>1.3.3</commons-fileupload.version>
 
-    <circe.version>1.9.4</circe.version>
+    <circe.version>1.10.1</circe.version>
     <jersey.version>2.14</jersey.version>
-    <SqlRender.version>1.9.0</SqlRender.version>
+    <SqlRender.version>1.13.1</SqlRender.version>
     <hive-jdbc.version>3.1.2</hive-jdbc.version>
     <pac4j.version>4.0.0</pac4j.version>
-    <jackson.version>2.10.5</jackson.version>
-    <jackson.databind.version>2.10.5.1</jackson.databind.version>
+    <jackson.version>2.12.7</jackson.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
     <skipUnitTests>false</skipUnitTests>
     <skipITtests>false</skipITtests>
@@ -69,7 +69,7 @@
     <!-- Full Text Search With SOLR Settings -->
     <solr.endpoint></solr.endpoint>
     <solr.query.prefix>{!complexphrase inOrder=true}</solr.query.prefix>
-    <solr.version>8.6.3</solr.version>
+    <solr.version>8.11.2</solr.version>
     <!-- Heracles properties -->
     <heracles.smallcellcount>5</heracles.smallcellcount>
 
@@ -100,6 +100,8 @@
     <security.oid.apiSecret></security.oid.apiSecret>
     <security.oid.url></security.oid.url>
     <security.oid.logoutUrl></security.oid.logoutUrl>
+    <security.oid.extraScopes></security.oid.extraScopes>
+    <security.oid.customParams>{:}</security.oid.customParams>
     <security.oid.redirectUrl>http://localhost/index.html#/welcome/</security.oid.redirectUrl>
     <security.kerberos.spn></security.kerberos.spn>
     <security.kerberos.keytabPath></security.kerberos.keytabPath>
@@ -114,6 +116,8 @@
     <security.ldap.userMapping.middlenameAttr>initials</security.ldap.userMapping.middlenameAttr>
     <security.ldap.userMapping.lastnameAttr>sn</security.ldap.userMapping.lastnameAttr>
     <security.ldap.userMapping.usernameAttr>cn</security.ldap.userMapping.usernameAttr>
+    <security.ldap.userImport.usernameAttr>cn</security.ldap.userImport.usernameAttr>
+    <security.ldap.userImport.loginAttr>uid</security.ldap.userImport.loginAttr>
     <security.ldap.searchBase>CN=Users,DC=example,DC=org</security.ldap.searchBase>
     <security.ad.url></security.ad.url>
     <security.ad.searchBase>CN=Users,DC=example,DC=org</security.ad.searchBase>
@@ -130,6 +134,8 @@
     <security.ad.userMapping.middlenameAttr>initials</security.ad.userMapping.middlenameAttr>
     <security.ad.userMapping.lastnameAttr>sn</security.ad.userMapping.lastnameAttr>
     <security.ad.userMapping.usernameAttr>cn</security.ad.userMapping.usernameAttr>
+    <security.ad.userImport.loginAttr>sAMAccountName</security.ad.userImport.loginAttr>
+    <security.ad.userImport.usernameAttr>cn</security.ad.userImport.usernameAttr>
 
     <security.cas.loginUrl></security.cas.loginUrl>
     <security.cas.callbackUrl></security.cas.callbackUrl>
@@ -193,7 +199,7 @@
     <server.ssl.key-password></server.ssl.key-password>
     <server.servlet.context-path>/WebAPI</server.servlet.context-path>
 
-    <arachne.version>1.17.2</arachne.version>
+    <arachne.version>1.17.3</arachne.version>
     <jersey-media-multipart.version>2.25.1</jersey-media-multipart.version>
     <execution.invalidation.period>600000</execution.invalidation.period>
     <execution.invalidation.maxage.hours>12</execution.invalidation.maxage.hours>
@@ -220,7 +226,7 @@
     <spring.jpa.show-sql>false</spring.jpa.show-sql>
     <spring.jpa.properties.hibernate.generate_statistics>false</spring.jpa.properties.hibernate.generate_statistics>
     <spring.jpa.properties.hibernate.jdbc.batch_size>200</spring.jpa.properties.hibernate.jdbc.batch_size>
-    <spring.jpa.properties.hibernate.order_inserts>true</spring.jpa.properties.hibernate.order_inserts>    
+    <spring.jpa.properties.hibernate.order_inserts>true</spring.jpa.properties.hibernate.order_inserts>
     <logging.level.root>info</logging.level.root>
     <logging.level.org.ohdsi>info</logging.level.org.ohdsi>
     <logging.level.org.springframework.orm>info</logging.level.org.springframework.orm>
@@ -237,12 +243,14 @@
 
     <!-- Sensitive Info settings -->
     <sensitiveinfo.admin.role>admin</sensitiveinfo.admin.role>
+    <sensitiveinfo.moderator.role>Moderator</sensitiveinfo.moderator.role>
     <!-- Use "-" for files without extension, "*" for all files, extension must not include a leading dot. Use comma to separate values.
      In case of "*" other values will be ignored -->
     <sensitiveinfo.analysis.extensions>txt</sensitiveinfo.analysis.extensions>
 
     <!-- Cache Config -->
     <cdm.result.cache.warming.enable>true</cdm.result.cache.warming.enable>
+    <cdm.cache.achilles.warming.enable>false</cdm.cache.achilles.warming.enable>
     <!-- Enable or disable warming cdm cache by cron -->
     <cdm.cache.cron.warming.enable>true</cdm.cache.cron.warming.enable>
     <!-- cron expression to warm cdm cache -->
@@ -265,8 +273,8 @@
     <cache.achilles.usePersonCount>true</cache.achilles.usePersonCount>
 
     <!-- Build info -->
-    <buildinfo.atlas.milestone.id>41</buildinfo.atlas.milestone.id>
-    <buildinfo.webapi.milestone.id>42</buildinfo.webapi.milestone.id>
+    <buildinfo.atlas.milestone.id>42</buildinfo.atlas.milestone.id>
+    <buildinfo.webapi.milestone.id>43</buildinfo.webapi.milestone.id>
     <buildinfo.atlas.release.tag>*</buildinfo.atlas.release.tag>
     <buildinfo.webapi.release.tag>*</buildinfo.webapi.release.tag>
 
@@ -339,7 +347,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>3.0.1</version>
+        <version>3.5.0</version>
       </plugin>
       <plugin>
         <groupId>pl.project13.maven</groupId>
@@ -354,15 +362,15 @@
           </execution>
         </executions>
         <configuration>
-		  <skip>true</skip>
-          <!--<generateGitPropertiesFile>false</generateGitPropertiesFile>
-          <failOnNoGitDirectory>false</failOnNoGitDirectory> -->
+         <skip>true</skip>
+          <!-- <generateGitPropertiesFile>false</generateGitPropertiesFile> -->
+          <!-- <failOnNoGitDirectory>false</failOnNoGitDirectory> -->
           <!-- only include properties to speed up plugin -->
           <!-- ref: https://github.com/git-commit-id/git-commit-id-maven-plugin/issues/462 -->
           <!-- <includeOnlyProperties>
               <includeOnlyProperty>git.branch</includeOnlyProperty>
               <includeOnlyProperty>git.commit.id.abbrev</includeOnlyProperty>
-          </includeOnlyProperties>-->
+          </includeOnlyProperties> -->
         </configuration>
       </plugin>
       <plugin>
@@ -415,7 +423,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.18.1</version>
+        <version>2.22.2</version>
         <configuration>
           <skipTests>${skipUnitTests}</skipTests>
         </configuration>
@@ -423,7 +431,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.1</version>
+        <version>3.10.1</version>
         <inherited>true</inherited>
         <configuration>
           <compilerArgs>
@@ -444,7 +452,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>2.18.1</version>
+        <version>2.22.2</version>
         <configuration>
           <skipITs>${skipITtests}</skipITs>
         </configuration>
@@ -456,7 +464,7 @@
             </goals>
             <configuration>
               <includes>
-                <include>**/IT*.java</include>
+                <include>**/*IT.java</include>
               </includes>
             </configuration>
           </execution>
@@ -465,7 +473,7 @@
       <plugin>
         <groupId>com.qmino</groupId>
         <artifactId>miredot-plugin</artifactId>
-        <version>2.2</version>
+        <version>2.4.0</version>
         <executions>
           <execution>
             <phase>${miredot.phase}</phase>
@@ -514,7 +522,7 @@
     <repository>
       <id>ohdsi</id>
       <name>repo.ohdsi.org</name>
-      <url>https://repo.ohdsi.org/nexus/content/groups/public</url>
+      <url>https://repo.ohdsi.org/nexus/content/groups/public/</url>
     </repository>
   </repositories>
 
@@ -526,7 +534,7 @@
     <pluginRepository>
       <id>ohdsi</id>
       <name>repo.ohdsi.org</name>
-      <url>https://repo.ohdsi.org/nexus/content/groups/public</url>
+      <url>https://repo.ohdsi.org/nexus/content/groups/public/</url>
     </pluginRepository>
   </pluginRepositories>
 
@@ -571,7 +579,7 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>${jackson.databind.version}</version>
+      <version>${jackson.version}</version>
       <exclusions>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
@@ -610,15 +618,15 @@
     <dependency>
       <groupId>org.yaml</groupId>
       <artifactId>snakeyaml</artifactId>
-      <version>1.26</version>
+      <version>1.32</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
       <exclusions>
         <exclusion>
-          <artifactId>org.hibernate</artifactId>
-          <groupId>hibernate-validator</groupId>
+          <groupId>org.hibernate</groupId>
+          <artifactId>hibernate-validator</artifactId>
         </exclusion>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
@@ -639,6 +647,16 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-batch</artifactId>
     </dependency>
+
+    <!-- We are intentionally overriding the Tomcat version from Spring Boot 1.5.22.RELEASE -->
+    <!-- and assuming tomcat-jdbc.jar will be in the Tomcat installation folder (\apache-tomcat-8.5.xxx\lib). -->
+    <!-- WebAPI.war.original should not contain overridden libraries -->
+    <dependency>
+      <groupId>org.apache.tomcat.embed</groupId>
+      <artifactId>tomcat-embed-el</artifactId>
+      <version>${tomcat.embed.version}</version>
+    </dependency>
+
     <!-- It is overriding a transitive dependency from the dependency above -->
     <!-- After migrating to Spring Boot 2.x we should get rid of it -->
     <dependency>
@@ -651,12 +669,22 @@
       <artifactId>spring-boot-starter-jdbc</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.apache.tomcat</groupId>
+      <artifactId>tomcat-jdbc</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tomcat</groupId>
+      <artifactId>tomcat-juli</artifactId>
+      <version>${tomcat.embed.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-jersey</artifactId>
       <exclusions>
         <exclusion>
-          <artifactId>org.hibernate</artifactId>
-          <groupId>hibernate-validator</groupId>
+          <groupId>org.hibernate</groupId>
+          <artifactId>hibernate-validator</artifactId>
         </exclusion>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
@@ -676,19 +704,10 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-jpa</artifactId>
     </dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-cache</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>javax.cache</groupId>
-			<artifactId>cache-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.ehcache</groupId>
-			<artifactId>ehcache</artifactId>
-            <version>3.8.1</version>
-		</dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-cache</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-core</artifactId>
@@ -756,6 +775,7 @@
     </dependency>
     <!-- It is overriding a transitive dependency from the dependency above -->
     <!-- After migrating to Spring Boot 2.x we should get rid of it -->
+    <!-- It is currently inefficient as com.nimbusds:nimbus-jose-jwt has hard bounds [1.3.1,2.3] -->
     <dependency>
       <groupId>net.minidev</groupId>
       <artifactId>json-smart</artifactId>
@@ -764,7 +784,7 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.9</version>
+      <version>3.12.0</version>
     </dependency>
     <dependency>
       <groupId>org.flywaydb</groupId>
@@ -775,11 +795,6 @@
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
       <version>4.5.13</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-httpclient</groupId>
-      <artifactId>commons-httpclient</artifactId>
-      <version>3.1</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.batch</groupId>
@@ -825,7 +840,7 @@
     <dependency>
       <groupId>com.microsoft.sqlserver</groupId>
       <artifactId>mssql-jdbc</artifactId>
-      <version>9.2.1.jre8</version>
+      <version>10.2.1.jre8</version>
     </dependency>
     <dependency>
       <groupId>com.microsoft.azure</groupId>
@@ -971,7 +986,7 @@
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
-      <version>20170516</version>
+      <version>20180130</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
@@ -996,12 +1011,12 @@
     <dependency>
       <groupId>com.zaxxer</groupId>
       <artifactId>HikariCP</artifactId>
-      <version>3.3.1</version>
+      <version>4.0.3</version>
     </dependency>
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
-      <version>2.8.9</version>
+      <version>2.9.0</version>
     </dependency>
     <dependency>
       <groupId>org.jasypt</groupId>
@@ -1217,6 +1232,7 @@
     </dependency>
   </dependencies>
   <profiles>
+
     <profile>
       <id>webapi-oracle</id>
       <properties>
@@ -1316,15 +1332,17 @@
           lower(email) = lower(?)</security.db.datasource.authenticationQuery>
       </properties>
       <repositories>
-        <repository>
-          <id>central</id>
-          <url>https://repo.maven.apache.org/maven2</url>
-        </repository>
-        <repository>
-          <id>ohdsi</id>
-          <name>repo.ohdsi.org</name>
-          <url>https://repo.ohdsi.org/nexus/content/groups/public</url>
-        </repository>
+	<repository>
+          <id>ohdsi.snapshots</id>
+          <name>repo.ohdsi.org-snapshots</name>
+          <url>https://repo.ohdsi.org/nexus/content/repositories/snapshots/</url>
+          <releases>
+            <enabled>false</enabled>
+          </releases>
+      	  <snapshots>
+            <enabled>true</enabled>
+      	  </snapshots>
+    	</repository>
       </repositories>
       <dependencies>
         <dependency>
@@ -1334,6 +1352,7 @@
           <type>jar</type>
         </dependency>
       </dependencies>
+	  
     </profile>
     <profile>
       <id>webapi-mssql</id>
@@ -1378,7 +1397,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-install-plugin</artifactId>
-            <version>2.5.2</version>
+            <version>3.1.0</version>
             <executions>
               <execution>
                 <id>netezza-jdbc</id>
@@ -1419,7 +1438,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-install-plugin</artifactId>
-            <version>2.5.2</version>
+            <version>3.1.0</version>
             <executions>
               <execution>
                 <id>impala-jdbc</id>
@@ -1459,7 +1478,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-install-plugin</artifactId>
-            <version>2.5.2</version>
+            <version>3.1.0</version>
             <executions>
               <execution>
                 <id>spark-jdbc</id>
@@ -1491,47 +1510,67 @@
         <dependency>
           <groupId>com.google.api-client</groupId>
           <artifactId>google-api-client</artifactId>
-          <version>1.28.0</version>
+          <version>1.33.4</version>
         </dependency>
         <dependency>
           <groupId>com.google.apis</groupId>
           <artifactId>google-api-services-bigquery</artifactId>
-          <version>v2-rev20200415-1.30.9</version>
+          <version>v2-rev20220326-1.32.1</version>
         </dependency>
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-bigquery</artifactId>
-            <version>1.2.11</version>
+            <version>1.2.15</version>
         </dependency>
         <dependency>
           <groupId>com.google.http-client</groupId>
           <artifactId>google-http-client</artifactId>
-          <version>1.28.0</version>
+          <version>1.41.5</version>
         </dependency>
         <dependency>
           <groupId>com.google.http-client</groupId>
-          <artifactId>google-http-client-jackson2</artifactId>
-          <version>1.28.0</version>
+          <artifactId>google-http-client-gson</artifactId>
+          <version>1.41.5</version>
         </dependency>
         <dependency>
           <groupId>com.google.oauth-client</groupId>
           <artifactId>google-oauth-client</artifactId>
-          <version>1.28.0</version>
+          <version>1.33.1</version>
         </dependency>
         <dependency>
           <groupId>com.google.cloud</groupId>
           <artifactId>google-cloud-bigquerystorage</artifactId>
-          <version>0.101.0-beta</version>
+          <version>2.12.0</version>
         </dependency>
         <dependency>
           <groupId>com.google.auth</groupId>
           <artifactId>google-auth-library-oauth2-http</artifactId>
-          <version>0.16.2</version>
+          <version>1.6.0</version>
         </dependency>
         <dependency>
           <groupId>com.google.auth</groupId>
           <artifactId>google-auth-library-credentials</artifactId>
-          <version>0.16.2</version>
+          <version>1.6.0</version>
+        </dependency>
+        <dependency>
+          <groupId>com.google.api</groupId>
+          <artifactId>gax</artifactId>
+          <version>2.13.0</version>
+        </dependency>
+        <dependency>
+          <groupId>com.google.api</groupId>
+          <artifactId>gax-grpc</artifactId>
+          <version>2.13.0</version>
+        </dependency>
+        <dependency>
+          <groupId>com.google.api.grpc</groupId>
+          <artifactId>proto-google-cloud-bigquerystorage-v1</artifactId>
+          <version>2.12.0</version>
+        </dependency>
+        <dependency>
+          <groupId>io.opencensus</groupId>
+          <artifactId>opencensus-contrib-http-util</artifactId>
+          <version>0.31.0</version>
         </dependency>
       </dependencies>
       <build>
@@ -1550,9 +1589,9 @@
                 <configuration>
                   <groupId>com.google.api-client</groupId>
                   <artifactId>google-api-client</artifactId>
-                  <version>1.28.0</version>
+                  <version>1.33.4</version>
                   <packaging>jar</packaging>
-                  <file>${bigquery.classpath}/google-api-client-1.28.0.jar</file>
+                  <file>${bigquery.classpath}/google-api-client-1.33.4.jar</file>
                 </configuration>
               </execution>
               <execution>
@@ -1564,9 +1603,9 @@
                 <configuration>
                   <groupId>com.google.apis</groupId>
                   <artifactId>google-api-services-bigquery</artifactId>
-                  <version>v2-rev20200415-1.30.9</version>
+                  <version>v2-rev20220326-1.32.1</version>
                   <packaging>jar</packaging>
-                  <file>${bigquery.classpath}/google-api-services-bigquery-v2-rev20200415-1.30.9.jar</file>
+                  <file>${bigquery.classpath}/google-api-services-bigquery-v2-rev20220326-1.32.1.jar</file>
                 </configuration>
               </execution>
               <execution>
@@ -1578,7 +1617,7 @@
                 <configuration>
                   <groupId>com.google.cloud</groupId>
                   <artifactId>google-cloud-bigquery</artifactId>
-                  <version>1.2.11</version>
+                  <version>1.2.15</version>
                   <packaging>jar</packaging>
                   <file>${bigquery.classpath}/GoogleBigQueryJDBC42.jar</file>
                 </configuration>
@@ -1592,23 +1631,23 @@
                 <configuration>
                   <groupId>com.google.http-client</groupId>
                   <artifactId>google-http-client</artifactId>
-                  <version>1.28.0</version>
+                  <version>1.41.5</version>
                   <packaging>jar</packaging>
-                  <file>${bigquery.classpath}/google-http-client-1.28.0.jar</file>
+                  <file>${bigquery.classpath}/google-http-client-1.41.5.jar</file>
                 </configuration>
               </execution>
               <execution>
-                <id>google-http-client-jackson2</id>
+                <id>google-http-client-gson</id>
                 <phase>initialize</phase>
                 <goals>
                   <goal>install-file</goal>
                 </goals>
                 <configuration>
                   <groupId>com.google.http-client</groupId>
-                  <artifactId>google-http-client-jackson2</artifactId>
-                  <version>1.28.0</version>
+                  <artifactId>google-http-client-gson</artifactId>
+                  <version>1.41.5</version>
                   <packaging>jar</packaging>
-                  <file>${bigquery.classpath}/google-http-client-jackson2-1.28.0.jar</file>
+                  <file>${bigquery.classpath}/google-http-client-gson-1.41.5.jar</file>
                 </configuration>
               </execution>
               <execution>
@@ -1620,9 +1659,9 @@
                 <configuration>
                   <groupId>com.google.oauth-client</groupId>
                   <artifactId>google-oauth-client</artifactId>
-                  <version>1.28.0</version>
+                  <version>1.33.1</version>
                   <packaging>jar</packaging>
-                  <file>${bigquery.classpath}/google-oauth-client-1.28.0.jar</file>
+                  <file>${bigquery.classpath}/google-oauth-client-1.33.1.jar</file>
                 </configuration>
               </execution>
               <execution>
@@ -1634,9 +1673,9 @@
                 <configuration>
                   <groupId>com.google.cloud</groupId>
                   <artifactId>google-cloud-bigquerystorage</artifactId>
-                  <version>0.101.0-beta</version>
+                  <version>2.12.0</version>
                   <packaging>jar</packaging>
-                  <file>${bigquery.classpath}/google-cloud-bigquerystorage-0.101.0-beta.jar</file>
+                  <file>${bigquery.classpath}/google-cloud-bigquerystorage-2.12.0.jar</file>
                 </configuration>
               </execution>
             </executions>
@@ -1783,6 +1822,20 @@
           <groupId>org.antlr</groupId>
           <artifactId>antlr4-runtime</artifactId>
           <version>4.8-1</version>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>webapi-snowflake</id>
+      <properties>
+        <snowflake.enabled>true</snowflake.enabled>
+        <snowflake.driver.version>3.13.22</snowflake.driver.version>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>net.snowflake</groupId>
+          <artifactId>snowflake-jdbc</artifactId>
+          <version>${snowflake.driver.version}</version>
         </dependency>
       </dependencies>
     </profile>

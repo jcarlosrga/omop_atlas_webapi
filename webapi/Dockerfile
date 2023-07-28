@@ -3,6 +3,7 @@ FROM maven:3.6-jdk-8 as builder
 WORKDIR /code
 
 ARG MAVEN_PROFILE=webapi-postgresql
+ARG MAVEN_PARAMS="" # can use maven options, e.g. -DskipTests=true -DskipUnitTests=true
 
 COPY lib/intersystems-jdbc-3.2.0.jar /code/lib/
 RUN mvn install:install-file \
@@ -13,11 +14,16 @@ RUN mvn install:install-file \
        -Dpackaging=jar \
        -DgeneratePom=true
 
+ARG OPENTELEMETRY_JAVA_AGENT_VERSION=1.17.0
+#RUN curl -LSsO https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v1.17.0/opentelemetry-javaagent.jar
+COPY lib/opentelemetry-javaagent.jar /code
+
 # Download dependencies
 COPY pom.xml /code/
+
 RUN mkdir .git \
     && mvn package \
-    -P${MAVEN_PROFILE}
+     -P${MAVEN_PROFILE}
 
 
 ARG GIT_BRANCH=unknown
@@ -25,7 +31,7 @@ ARG GIT_COMMIT_ID_ABBREV=unknown
 
 # Compile code and repackage it
 COPY src /code/src
-RUN mvn package \
+RUN mvn package ${MAVEN_PARAMS} \
     -Dgit.branch=${GIT_BRANCH} \
     -Dgit.commit.id.abbrev=${GIT_COMMIT_ID_ABBREV} \
     -P${MAVEN_PROFILE} \
@@ -51,6 +57,8 @@ ENV DEFAULT_JAVA_OPTS="-Djava.security.egd=file:///dev/./urandom"
 
 # set working directory to a fixed WebAPI directory
 WORKDIR /var/lib/ohdsi/webapi
+
+COPY --from=builder /code/opentelemetry-javaagent.jar .
 
 # deploy the just built OHDSI WebAPI war file
 # copy resources in order of fewest changes to most changes.

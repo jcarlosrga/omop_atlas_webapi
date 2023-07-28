@@ -17,7 +17,7 @@ from @ohdsi_database_schema.heracles_results hr1
                     case when (concept_name like 'Inpatient%' or concept_name like 'Outpatient%' ) and (concept_name like '%primary%' or concept_name like '%1st position%') then 1
                     when (concept_name like 'Inpatient%' or concept_name like 'Outpatient%' ) and (concept_name not like '%primary%' and concept_name not like '%1st position%') then 2
                     else 0 end as concept_group_id,
-             CONCAT(
+             STRING(
                 case when concept_name like 'Inpatient%' then 'Claim- Inpatient: '
                 when concept_name like 'Outpatient%' then 'Claim- Outpatient: '
                 else concept_name end,

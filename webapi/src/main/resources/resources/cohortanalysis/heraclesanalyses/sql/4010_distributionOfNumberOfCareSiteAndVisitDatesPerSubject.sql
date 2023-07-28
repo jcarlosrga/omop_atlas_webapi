@@ -5,7 +5,7 @@ select distinct c1.cohort_definition_id,
   vca.ancestor_concept_id as visit_concept_id,
   vo1.visit_type_concept_id,
   vo1.visit_start_date,
-  CONCAT(cast(care_site_id as varchar(19)), '_', CAST(YEAR(visit_start_date) as varchar(4)), CAST(RIGHT(CONCAT('00', cast(MONTH(visit_start_date) as varchar(2))),2) as varchar(2)), CAST(RIGHT(CONCAT('00', cast(DAY(visit_start_date) as varchar(2))),2) as varchar(2))) as care_site_date_id,
+  STRING(cast(care_site_id as varchar(19)), '_', CAST(YEAR(visit_start_date) as varchar(4)), CAST(RIGHT(STRING('00', cast(MONTH(visit_start_date) as varchar(2))),2) as varchar(2)), CAST(RIGHT(STRING('00', cast(DAY(visit_start_date) as varchar(2))),2) as varchar(2))) as care_site_date_id,
   case when vca.ancestor_concept_id = vca.descendant_concept_id then 0 else 1 end as ancestor
 INTO #raw_4010
 from #HERACLES_cohort c1
@@ -20,7 +20,7 @@ select distinct c1.cohort_definition_id,
   vo1.visit_concept_id,
   vo1.visit_type_concept_id,
   vo1.visit_start_date,
-  CONCAT(cast(care_site_id as varchar(19)), '_', CAST(YEAR(visit_start_date) as varchar(4)), CAST(RIGHT(CONCAT('00', cast(MONTH(visit_start_date) as varchar(2))),2) as varchar(2)), CAST(RIGHT(CONCAT('00', cast(DAY(visit_start_date) as varchar(2))),2) as varchar(2))) as care_site_date_id
+  STRING(cast(care_site_id as varchar(19)), '_', CAST(YEAR(visit_start_date) as varchar(4)), CAST(RIGHT(STRING('00', cast(MONTH(visit_start_date) as varchar(2))),2) as varchar(2)), CAST(RIGHT(STRING('00', cast(DAY(visit_start_date) as varchar(2))),2) as varchar(2))) as care_site_date_id
 INTO #raw_4010
 from #HERACLES_cohort c1
 join @CDM_schema.visit_occurrence as vo1 on c1.subject_id = vo1.person_id

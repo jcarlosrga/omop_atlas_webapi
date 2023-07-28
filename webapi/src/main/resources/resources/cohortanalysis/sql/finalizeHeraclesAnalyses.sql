@@ -37,7 +37,7 @@ INSERT INTO @results_schema.HERACLES_HEEL_results (
   HERACLES_HEEL_warning
 )
   SELECT DISTINCT or1.cohort_definition_id, or1.analysis_id,
-    CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; count (n=', cast(or1.count_value as VARCHAR), ') should not be > 0') AS VARCHAR(255)) AS HERACLES_HEEL_warning
+    CAST(STRING('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; count (n=', cast(or1.count_value as VARCHAR), ') should not be > 0') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.heracles_results or1
     INNER JOIN @results_schema.heracles_analysis oa1
       ON or1.analysis_id = oa1.analysis_id
@@ -96,7 +96,7 @@ INSERT INTO @results_schema.HERACLES_HEEL_results (
   HERACLES_HEEL_warning
 )
   SELECT DISTINCT ord1.cohort_definition_id, ord1.analysis_id,
-    CAST(CONCAT('ERROR: ', cast(ord1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; min (value=', cast(ord1.min_value as VARCHAR), ') should not be negative') AS VARCHAR(255)) AS HERACLES_HEEL_warning
+    CAST(STRING('ERROR: ', cast(ord1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; min (value=', cast(ord1.min_value as VARCHAR), ') should not be negative') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.heracles_results_dist ord1
     INNER JOIN @results_schema.heracles_analysis oa1
       ON ord1.analysis_id = oa1.analysis_id
@@ -144,7 +144,7 @@ INSERT INTO @results_schema.HERACLES_HEEL_results (
   HERACLES_HEEL_warning
 )
   SELECT DISTINCT ord1.cohort_definition_id, ord1.analysis_id,
-    CAST(CONCAT('WARNING: ', cast(ord1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; max (value=', cast(ord1.max_value as VARCHAR), ') should not be positive, otherwise its a zombie with data >1mo after death ') AS VARCHAR(255)) AS HERACLES_HEEL_warning
+    CAST(STRING('WARNING: ', cast(ord1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; max (value=', cast(ord1.max_value as VARCHAR), ') should not be positive, otherwise its a zombie with data >1mo after death ') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.heracles_results_dist ord1
     INNER JOIN @results_schema.heracles_analysis oa1
       ON ord1.analysis_id = oa1.analysis_id
@@ -165,7 +165,7 @@ INSERT INTO @results_schema.HERACLES_HEEL_results (
   HERACLES_HEEL_warning
 )
   SELECT or1.cohort_definition_id, or1.analysis_id,
-    CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in vocabulary') AS VARCHAR(255)) AS HERACLES_HEEL_warning
+    CAST(STRING('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in vocabulary') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.heracles_results or1
     INNER JOIN @results_schema.heracles_analysis oa1
       ON or1.analysis_id = oa1.analysis_id
@@ -203,7 +203,7 @@ INSERT INTO @results_schema.HERACLES_HEEL_results (
 )
   SELECT or1.cohort_definition_id,
     or1.analysis_id,
-    CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_2) AS VARCHAR), ' concepts in data are not in vocabulary') AS VARCHAR(255)) AS HERACLES_HEEL_warning
+    CAST(STRING('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_2) AS VARCHAR), ' concepts in data are not in vocabulary') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.heracles_results or1
     INNER JOIN @results_schema.heracles_analysis oa1
       ON or1.analysis_id = oa1.analysis_id
@@ -230,7 +230,7 @@ INSERT INTO @results_schema.HERACLES_HEEL_results (
 )
   SELECT or1.cohort_definition_id,
     or1.analysis_id,
-    CAST(CONCAT('WARNING: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; data with unmapped concepts') AS VARCHAR(255)) AS HERACLES_HEEL_warning
+    CAST(STRING('WARNING: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; data with unmapped concepts') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.heracles_results or1
     INNER JOIN @results_schema.heracles_analysis oa1
       ON or1.analysis_id = oa1.analysis_id
@@ -267,7 +267,7 @@ INSERT INTO @results_schema.HERACLES_HEEL_results (
 )
   SELECT or1.cohort_definition_id,
     or1.analysis_id,
-    CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (HL7 Sex)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
+    CAST(STRING('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (HL7 Sex)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.heracles_results or1
     INNER JOIN @results_schema.heracles_analysis oa1
       ON or1.analysis_id = oa1.analysis_id
@@ -292,7 +292,7 @@ INSERT INTO @results_schema.HERACLES_HEEL_results (
 )
   SELECT or1.cohort_definition_id,
     or1.analysis_id,
-    CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (CDC Race)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
+    CAST(STRING('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (CDC Race)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.heracles_results or1
     INNER JOIN @results_schema.heracles_analysis oa1
       ON or1.analysis_id = oa1.analysis_id
@@ -316,7 +316,7 @@ INSERT INTO @results_schema.HERACLES_HEEL_results (
 )
   SELECT or1.cohort_definition_id,
     or1.analysis_id,
-    CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (CMS Ethnicity)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
+    CAST(STRING('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (CMS Ethnicity)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.heracles_results or1
     INNER JOIN @results_schema.heracles_analysis oa1
       ON or1.analysis_id = oa1.analysis_id
@@ -340,7 +340,7 @@ INSERT INTO @results_schema.HERACLES_HEEL_results (
 )
   SELECT or1.cohort_definition_id,
     or1.analysis_id,
-    CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (CMS place of service or OMOP visit)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
+    CAST(STRING('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (CMS place of service or OMOP visit)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.heracles_results or1
     INNER JOIN @results_schema.heracles_analysis oa1
       ON or1.analysis_id = oa1.analysis_id
@@ -364,7 +364,7 @@ INSERT INTO @results_schema.HERACLES_HEEL_results (
 )
   SELECT or1.cohort_definition_id,
     or1.analysis_id,
-    CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (Specialty)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
+    CAST(STRING('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (Specialty)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.heracles_results or1
     INNER JOIN @results_schema.heracles_analysis oa1
       ON or1.analysis_id = oa1.analysis_id
@@ -388,7 +388,7 @@ INSERT INTO @results_schema.HERACLES_HEEL_results (
 )
   SELECT or1.cohort_definition_id,
     or1.analysis_id,
-    CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (SNOMED)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
+    CAST(STRING('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (SNOMED)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.heracles_results or1
     INNER JOIN @results_schema.heracles_analysis oa1
       ON or1.analysis_id = oa1.analysis_id
@@ -415,7 +415,7 @@ INSERT INTO @results_schema.HERACLES_HEEL_results (
 )
   SELECT or1.cohort_definition_id,
     or1.analysis_id,
-    CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (RxNorm)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
+    CAST(STRING('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (RxNorm)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.heracles_results or1
     INNER JOIN @results_schema.heracles_analysis oa1
       ON or1.analysis_id = oa1.analysis_id
@@ -442,7 +442,7 @@ INSERT INTO @results_schema.HERACLES_HEEL_results (
 )
   SELECT or1.cohort_definition_id,
     or1.analysis_id,
-    CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (CPT4/HCPCS/ICD9P)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
+    CAST(STRING('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (CPT4/HCPCS/ICD9P)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.heracles_results or1
     INNER JOIN @results_schema.heracles_analysis oa1
       ON or1.analysis_id = oa1.analysis_id
@@ -466,7 +466,7 @@ INSERT INTO @results_schema.HERACLES_HEEL_results (
 )
   SELECT or1.cohort_definition_id,
     or1.analysis_id,
-    CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (LOINC)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
+    CAST(STRING('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (LOINC)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.heracles_results or1
     INNER JOIN @results_schema.heracles_analysis oa1
       ON or1.analysis_id = oa1.analysis_id
@@ -491,7 +491,7 @@ INSERT INTO @results_schema.HERACLES_HEEL_results (
 )
   SELECT or1.cohort_definition_id,
     or1.analysis_id,
-    CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (DRG)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
+    CAST(STRING('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (DRG)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.heracles_results or1
     INNER JOIN @results_schema.heracles_analysis oa1
       ON or1.analysis_id = oa1.analysis_id
@@ -515,7 +515,7 @@ INSERT INTO @results_schema.HERACLES_HEEL_results (
 )
   SELECT or1.cohort_definition_id,
     or1.analysis_id,
-    CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (revenue code)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
+    CAST(STRING('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; ', cast(COUNT_BIG(DISTINCT stratum_1) AS VARCHAR), ' concepts in data are not in correct vocabulary (revenue code)') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.heracles_results or1
     INNER JOIN @results_schema.heracles_analysis oa1
       ON or1.analysis_id = oa1.analysis_id
@@ -540,7 +540,7 @@ INSERT INTO @results_schema.HERACLES_HEEL_results (
 )
   SELECT or1.cohort_definition_id,
     or1.analysis_id,
-    CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; should not have year of birth in the future, (n=', cast(sum(or1.count_value) as VARCHAR), ')') AS VARCHAR(255)) AS HERACLES_HEEL_warning
+    CAST(STRING('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; should not have year of birth in the future, (n=', cast(sum(or1.count_value) as VARCHAR), ')') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.heracles_results or1
     INNER JOIN @results_schema.heracles_analysis oa1
       ON or1.analysis_id = oa1.analysis_id
@@ -561,7 +561,7 @@ INSERT INTO @results_schema.HERACLES_HEEL_results (
 )
   SELECT or1.cohort_definition_id,
     or1.analysis_id,
-    CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; should not have year of birth < 1900, (n=', cast(sum(or1.count_value) as VARCHAR), ')') AS VARCHAR(255)) AS HERACLES_HEEL_warning
+    CAST(STRING('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; should not have year of birth < 1900, (n=', cast(sum(or1.count_value) as VARCHAR), ')') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.heracles_results or1
     INNER JOIN @results_schema.heracles_analysis oa1
       ON or1.analysis_id = oa1.analysis_id
@@ -581,7 +581,7 @@ INSERT INTO @results_schema.HERACLES_HEEL_results (
 )
   SELECT or1.cohort_definition_id,
     or1.analysis_id,
-    CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; should not have age < 0, (n=', cast(sum(or1.count_value) as VARCHAR), ')') AS VARCHAR(255)) AS HERACLES_HEEL_warning
+    CAST(STRING('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; should not have age < 0, (n=', cast(sum(or1.count_value) as VARCHAR), ')') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.heracles_results or1
     INNER JOIN @results_schema.heracles_analysis oa1
       ON or1.analysis_id = oa1.analysis_id
@@ -601,7 +601,7 @@ INSERT INTO @results_schema.HERACLES_HEEL_results (
 )
   SELECT or1.cohort_definition_id,
     or1.analysis_id,
-    CAST(CONCAT('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; should not have age > 100, (n=', cast(sum(or1.count_value) as VARCHAR), ')') AS VARCHAR(255)) AS HERACLES_HEEL_warning
+    CAST(STRING('ERROR: ', cast(or1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; should not have age > 100, (n=', cast(sum(or1.count_value) as VARCHAR), ')') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.heracles_results or1
     INNER JOIN @results_schema.heracles_analysis oa1
       ON or1.analysis_id = oa1.analysis_id
@@ -620,7 +620,7 @@ INSERT INTO @results_schema.HERACLES_HEEL_results (
   HERACLES_HEEL_warning
 )
   SELECT DISTINCT her1.cohort_definition_id, her1.analysis_id,
-    CAST(CONCAT('WARNING: ', cast(her1.analysis_id as VARCHAR), '-', aa1.analysis_name, '; theres a 100% change in monthly count of events') AS VARCHAR(255)) AS HERACLES_HEEL_warning
+    CAST(STRING('WARNING: ', cast(her1.analysis_id as VARCHAR), '-', aa1.analysis_name, '; theres a 100% change in monthly count of events') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.heracles_analysis aa1
     INNER JOIN (
                  SELECT
@@ -679,7 +679,7 @@ INSERT INTO @results_schema.HERACLES_HEEL_results (
 )
   SELECT her1.cohort_definition_id,
     her1.analysis_id,
-    CAST(CONCAT('WARNING: ', CAST(her1.analysis_id  AS VARCHAR(1000)), '-', aa1.analysis_name, '; ', CAST(COUNT_BIG(DISTINCT her1.stratum_1)  AS VARCHAR(1000)), 'concepts have a 100% change in monthly count of events') AS VARCHAR(255)) AS HERACLES_HEEL_warning
+    CAST(STRING('WARNING: ', CAST(her1.analysis_id  AS VARCHAR(1000)), '-', aa1.analysis_name, '; ', CAST(COUNT_BIG(DISTINCT her1.stratum_1)  AS VARCHAR(1000)), 'concepts have a 100% change in monthly count of events') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.heracles_analysis aa1
     INNER JOIN (
                  SELECT
@@ -740,7 +740,7 @@ INSERT INTO @results_schema.HERACLES_HEEL_results (
 )
   SELECT DISTINCT ord1.cohort_definition_id,
     ord1.analysis_id,
-    CAST(CONCAT('ERROR: ', cast(ord1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; max (value=', cast(ord1.max_value as VARCHAR), ' should not be > 180') AS VARCHAR(255)) AS HERACLES_HEEL_warning
+    CAST(STRING('ERROR: ', cast(ord1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; max (value=', cast(ord1.max_value as VARCHAR), ' should not be > 180') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.heracles_results_dist ord1
     INNER JOIN @results_schema.heracles_analysis oa1
       ON ord1.analysis_id = oa1.analysis_id
@@ -756,7 +756,7 @@ INSERT INTO @results_schema.HERACLES_HEEL_results (
 )
   SELECT DISTINCT ord1.cohort_definition_id,
     ord1.analysis_id,
-    CAST(CONCAT('ERROR: ', cast(ord1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; max (value=', cast(ord1.max_value as VARCHAR), ' should not be > 10') AS VARCHAR(255)) AS HERACLES_HEEL_warning
+    CAST(STRING('ERROR: ', cast(ord1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; max (value=', cast(ord1.max_value as VARCHAR), ' should not be > 10') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.heracles_results_dist ord1
     INNER JOIN @results_schema.heracles_analysis oa1
       ON ord1.analysis_id = oa1.analysis_id
@@ -772,7 +772,7 @@ INSERT INTO @results_schema.HERACLES_HEEL_results (
 )
   SELECT DISTINCT ord1.cohort_definition_id,
     ord1.analysis_id,
-    CAST(CONCAT('ERROR: ', cast(ord1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; max (value=', cast(ord1.max_value as VARCHAR), ' should not be > 600') AS VARCHAR(255)) AS HERACLES_HEEL_warning
+    CAST(STRING('ERROR: ', cast(ord1.analysis_id as VARCHAR), '-', oa1.analysis_name, '; max (value=', cast(ord1.max_value as VARCHAR), ' should not be > 600') AS VARCHAR(255)) AS HERACLES_HEEL_warning
   FROM @results_schema.heracles_results_dist ord1
     INNER JOIN @results_schema.heracles_analysis oa1
       ON ord1.analysis_id = oa1.analysis_id

@@ -1,4 +1,5 @@
 WebAPIConfig/
+*application.properties
 .idea/
 .metadata/
 *.iml
@@ -17,3 +18,4 @@ sandbox/
 **/resources/config/application*-dev-*.yaml
 **/resources/config/application*-dev-*.yml
 /.vscode
+/.run

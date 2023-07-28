@@ -3,6 +3,7 @@ package org.ohdsi.webapi.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.achilles.aspect.AchillesCache;
 import org.ohdsi.webapi.achilles.service.AchillesCacheService;
@@ -13,7 +14,6 @@ import org.ohdsi.webapi.cdmresults.DescendantRecordCount;
 import org.ohdsi.webapi.cdmresults.domain.CDMCacheEntity;
 import org.ohdsi.webapi.cdmresults.service.CDMCacheService;
 import org.ohdsi.webapi.job.JobExecutionResource;
-import org.ohdsi.webapi.report.CDMAchillesHeel;
 import org.ohdsi.webapi.report.CDMDashboard;
 import org.ohdsi.webapi.report.CDMDataDensity;
 import org.ohdsi.webapi.report.CDMDeath;
@@ -66,7 +66,6 @@ import static org.ohdsi.webapi.cdmresults.AchillesCacheTasklet.DASHBOARD;
 import static org.ohdsi.webapi.cdmresults.AchillesCacheTasklet.DATA_DENSITY;
 import static org.ohdsi.webapi.cdmresults.AchillesCacheTasklet.DEATH;
 import static org.ohdsi.webapi.cdmresults.AchillesCacheTasklet.DRILLDOWN;
-import static org.ohdsi.webapi.cdmresults.AchillesCacheTasklet.HEEL;
 import static org.ohdsi.webapi.cdmresults.AchillesCacheTasklet.OBSERVATION_PERIOD;
 import static org.ohdsi.webapi.cdmresults.AchillesCacheTasklet.PERSON;
 import static org.ohdsi.webapi.cdmresults.AchillesCacheTasklet.TREEMAP;
@@ -113,19 +112,22 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
 
     @Value("${cdm.cache.cron.warming.enable}")
     private boolean cdmCacheCronWarmingEnable;
+    
+    @Value("${cdm.cache.achilles.warming.enable}")
+    private boolean cdmAchillesCacheWarmingEnable;
 
     @Value("${cache.achilles.usePersonCount:false}")
     private boolean usePersonCount;
 
     @Value("${cache.jobs.count:3}")
     private int cacheJobsCount;
-    
+
     @Autowired
     private ApplicationContext applicationContext;
 
     @Autowired
     private AchillesCacheService cacheService;
-    
+
     @Autowired
     private CDMCacheService cdmCacheService;
 
@@ -134,7 +136,6 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
 
     @Override
     public void afterPropertiesSet() throws Exception {
-
         queryRunner.init(this.getSourceDialect(), objectMapper);
         warmCaches();
     }
@@ -146,24 +147,36 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
         }
     }
 
-    private void warmCaches(){
-            Collection<Source> sources =  sourceService.getSources();
-            warmCaches(sources);
-
-            if (logger.isInfoEnabled()) {
-                List<String> sourceNames = sources
-                        .stream()
-                        .filter(s -> !SourceUtils.hasSourceDaimon(s, SourceDaimon.DaimonType.Vocabulary)
-                                || !SourceUtils.hasSourceDaimon(s, SourceDaimon.DaimonType.Results))
-                        .map(Source::getSourceName)
-                        .collect(Collectors.toList());
-                if (!sourceNames.isEmpty()) {
-                    logger.info("Following sources do not have Vocabulary or Result schema and will not be cached: {}",
-                            sourceNames.stream().collect(Collectors.joining(", ")));
-                }
-            }
-    }
-
+    /**
+     * Get the record count and descendant record count for one or more concepts in a single CDM database
+     *
+     * <p>
+     *     This POST request accepts a json array containing one or more concept IDs. (e.g. [201826, 437827])
+     * </p>
+     *
+     * @param sourceKey The unique identifier for a CDM source (e.g. SYNPUF5PCT)
+     *
+     * @return A javascript object with one element per concept. Each element is an array of lenth two containing the
+     * record count and descendent record count for the concept.
+     *
+     * <p>
+     *     [
+     *     {
+     *         "201826": [
+     *             612861,
+     *             653173
+     *         ]
+     *     },
+     *     {
+     *         "437827": [
+     *             224421,
+     *             224421
+     *         ]
+     *     }
+     * ]
+     * </p>
+     * For concept id "201826" in the SYNPUF5PCT data source the record count is 612861 and the descendant record count is 653173.
+     */
     @Path("{sourceKey}/conceptRecordCount")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -229,6 +242,13 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
         return this.queryRunner.getPersonResults(this.getSourceJdbcTemplate(source), source);
     }
 
+    /**
+     * Warm the results cache for a selected source
+     * 
+     * @summary Warm cache for source key
+     * @param sourceKey The source key
+     * @return The job execution information
+     */
     @GET
     @Path("{sourceKey}/warmCache")
     @Produces(MediaType.APPLICATION_JSON)
@@ -236,6 +256,13 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
         return this.warmCacheByKey(sourceKey);
     }
 
+    /**
+     * Refresh the results cache for a selected source
+     * 
+     * @summary Refresh results cache
+     * @param sourceKey The source key
+     * @return The job execution resource
+     */
     @GET
     @Path("{sourceKey}/refreshCache")
     @Produces(MediaType.APPLICATION_JSON)
@@ -243,7 +270,7 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
         if(isSecured() && isAdmin()) {
             Source source = getSourceRepository().findBySourceKey(sourceKey);
             if (sourceAccessor.hasAccess(source)) {
-                JobExecutionResource jobExecutionResource = jobService.findJobByName(Constants.WARM_CACHE, getWarmCacheJobName(sourceKey));
+                JobExecutionResource jobExecutionResource = jobService.findJobByName(Constants.WARM_CACHE, getWarmCacheJobName(String.valueOf(source.getSourceId()),sourceKey));
                 if (jobExecutionResource == null) {
                     if (source.getDaimons().stream().anyMatch(sd -> Objects.equals(sd.getDaimonType(), SourceDaimon.DaimonType.Results))) {
                         return warmCacheByKey(source.getSourceKey());
@@ -255,29 +282,11 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
         }
         return new JobExecutionResource();
     }
-
-    /**
-     * Queries for achilles heel report for the given sourceKey
-     *
-     * @return CDMAchillesHeel
-     */
-    @GET
-    @Path("{sourceKey}/achillesheel")
-    @Produces(MediaType.APPLICATION_JSON)
-    @AchillesCache(HEEL)
-    public CDMAchillesHeel getAchillesHeelReport(@PathParam("sourceKey")
-            final String sourceKey) {
-        return getRawAchillesHeelReport(sourceKey);
-    }
-
-    public CDMAchillesHeel getRawAchillesHeelReport(String sourceKey) {
-        Source source = getSourceRepository().findBySourceKey(sourceKey);
-        return this.queryRunner.getHeelResults(this.getSourceJdbcTemplate(source), source);
-    }
-
+    
     /**
      * Queries for data density report for the given sourceKey
-     *
+     * 
+     * @param sourceKey The source key
      * @return CDMDataDensity
      */
     @GET
@@ -356,8 +365,11 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
 
     /**
      * Queries for drilldown results
-     *
-     * @return List<ArrayNode>
+     * 
+     * @param domain The domain for the drilldown
+     * @param conceptId The concept ID
+     * @param sourceKey The source key
+     * @return The JSON results
      */
     @GET
     @Path("{sourceKey}/{domain}/{conceptId}")
@@ -381,14 +393,35 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
     }
 
     private JobExecutionResource warmCacheByKey(String sourceKey) {
-        if (jobService.findJobByName(getWarmCacheJobName(sourceKey), getWarmCacheJobName(sourceKey)) == null) {
-            Source source = getSourceRepository().findBySourceKey(sourceKey);
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+        if (jobService.findJobByName(getWarmCacheJobName(String.valueOf(source.getSourceId()), sourceKey), getWarmCacheJobName(String.valueOf(source.getSourceId()), sourceKey)) == null) {
             return warmCaches(source);
         } else {
             return new JobExecutionResource();
         }
     }
 
+    private void warmCaches(){
+            Collection<Source> sources =  sourceService.getSources();
+            warmCaches(sources);
+
+            if (logger.isInfoEnabled()) {
+                List<String> sourceNames = sources
+                        .stream()
+                        .filter(s -> !SourceUtils.hasSourceDaimon(s, SourceDaimon.DaimonType.Vocabulary)
+                                || !SourceUtils.hasSourceDaimon(s, SourceDaimon.DaimonType.Results))
+                        .map(Source::getSourceName)
+                        .collect(Collectors.toList());
+                if (!sourceNames.isEmpty()) {
+                    logger.info("Following sources do not have Vocabulary or Result schema and will not be cached: {}",
+                            sourceNames.stream().collect(Collectors.joining(", ")));
+                }
+            }
+    }
+    
+    /*
+     * Warm cache for a single source
+    */
     private JobExecutionResource warmCaches(Source source) {
 
         if (!cdmResultCacheWarmingEnable) {
@@ -399,17 +432,24 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
             logger.info("Cache wouldn't be applied to sources without Vocabulary and Result schemas, source [{}] was omitted", source.getSourceName());
             return new JobExecutionResource();
         }
-
-        String jobName = getWarmCacheJobName(source.getSourceKey());
-        Step resultsCacheStep = getCountStep(source, jobName);
-        Step achillesCacheStep = getAchillesStep(source, jobName);
-
-        SimpleJobBuilder builder = jobBuilders.get(jobName)
-                .start(achillesCacheStep)
-                .next(resultsCacheStep);
-        return createJob(source.getSourceKey(), source.getSourceId(), jobName, builder);
+        
+        int resultDaimonPriority = getResultsDaimonPriority(source);
+        if (!cdmAchillesCacheWarmingEnable && resultDaimonPriority <= 0) {
+            logger.info("Cache wouldn't be applied to sources with result daimon priority <= 0 AND when the Achilles cache is disabled, source [{}] was omitted", source.getSourceName());
+            return new JobExecutionResource();
+        }
+        
+        String jobName = getWarmCacheJobName(String.valueOf(source.getSourceId()), source.getSourceKey());
+        List<Step> jobSteps = createCacheWarmingJobSteps(source, jobName);
+        SimpleJobBuilder builder = createJob(String.valueOf(source.getSourceId()),
+                source.getSourceKey(),
+                jobSteps);
+        return runJob(source.getSourceKey(), source.getSourceId(), jobName, builder);
     }
 
+    /*
+     * Warm cache for a collection of sources
+    */
     private void warmCaches(Collection<Source> sources) {
 
         if (!cdmResultCacheWarmingEnable) {
@@ -418,70 +458,58 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
         }
         List<Source> vocabularySources = sources.stream()
                 .filter(s -> SourceUtils.hasSourceDaimon(s, SourceDaimon.DaimonType.Vocabulary) 
-                        && SourceUtils.hasSourceDaimon(s, SourceDaimon.DaimonType.Results))
+                        && SourceUtils.hasSourceDaimon(s, SourceDaimon.DaimonType.Results)
+                        && s.isIsCacheEnabled())
                 .collect(Collectors.toList());
 
         long[] bucketSizes = getBucketSizes(vocabularySources);
         int bucketIndex = 0, counter = 0;
         List<Integer> sourceIds = new ArrayList<>();
         List<String> sourceKeys = new ArrayList<>();
-        List<Step> jobSteps = new ArrayList<>();
+        List<Step> allJobSteps = new ArrayList<>();
         for (Source source : vocabularySources) {
             sourceIds.add(source.getSourceId());
             sourceKeys.add(source.getSourceKey());
-            String jobStepName = getWarmCacheJobName(source.getSourceKey());
+            String jobName = getWarmCacheJobName(String.valueOf(source.getSourceId()), source.getSourceKey());
             // Check whether cache job for current source already exists
-            if (jobService.findJobByName(jobStepName, jobStepName) == null) {
-                Step jobStep = getJobStep(source, jobStepName);
+            if (jobService.findJobByName(jobName, jobName) == null) {
+                // Create the job step
+                List<Step> jobSteps = createCacheWarmingJobSteps(source, jobName);
 
                 // get priority of the results daimon
-                int priority = getPriority(source);
+                int priority = getResultsDaimonPriority(source);
                 // if source has results daimon with high priority - put it at the beginning of the queue 
-                if (priority == 1) {
-                    jobSteps.add(0, jobStep);
+                if (priority > 0) {
+                    allJobSteps.addAll(0, jobSteps);
                 } else {
-                    jobSteps.add(jobStep);
+                    allJobSteps.addAll(jobSteps);
                 }
             }
 
             if (counter++ >= bucketSizes[bucketIndex] - 1) {
-                createJob(sourceIds.stream().map(String::valueOf).collect(Collectors.joining(", ")),
-                        String.join(", ", sourceKeys),
-                        jobSteps);
+                if (!allJobSteps.isEmpty()) {
+                    SimpleJobBuilder builder = createJob(sourceIds.stream().map(String::valueOf).collect(Collectors.joining(",")),
+                            String.join(",", sourceKeys),
+                            allJobSteps);
+                    runJob(source.getSourceKey(), source.getSourceId(), jobName, builder);
+                }
                 
                 bucketIndex++;
                 counter = 0;
+                sourceIds.clear();
                 sourceKeys.clear();
-                jobSteps.clear();
+                allJobSteps.clear();
             }
         }
     }
 
-    private Step getJobStep(Source source, String jobStepName) {
-        SimpleJob job = new SimpleJob(jobStepName);
-        job.setJobRepository(jobRepository);
-
-        job.addStep(getAchillesStep(source, jobStepName));
-        job.addStep(getCountStep(source, jobStepName));
-
-        return stepBuilderFactory.get(jobStepName)
-                .job(job)
-                .parametersExtractor((job1, stepExecution) -> new JobParametersBuilder()
-                        .addString(Constants.Params.JOB_NAME, jobStepName)
-                        .addString(Constants.Params.SOURCE_KEY, source.getSourceKey())
-                        .addString(Constants.Params.SOURCE_ID, String.valueOf(source.getSourceId()))
-                        .addString(Constants.Params.JOB_AUTHOR, security.getSubject())
-                        .addLong(JOB_START_TIME, System.currentTimeMillis())
-                        .toJobParameters())
-                .build();
-    }
-
-    private void createJob(String sourceIds, String sourceKeys, List<Step> steps) {
+    private SimpleJobBuilder createJob(String sourceIds, String sourceKeys, List<Step> steps) {
+        final SimpleJobBuilder[] stepBuilder = {null};
         String jobName = getWarmCacheJobName(sourceIds, sourceKeys);
-        if (jobService.findJobByName(jobName, jobName) == null && steps.size() > 0) {
+        if (jobService.findJobByName(jobName, jobName) == null && !steps.isEmpty()) {
             JobBuilder jobBuilder = jobBuilders.get(jobName);
 
-            final SimpleJobBuilder[] stepBuilder = {null};
+            
             steps.forEach(step -> {
                 if (stepBuilder[0] != null) {
                     stepBuilder[0].next(step);
@@ -489,37 +517,37 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
                     stepBuilder[0] = jobBuilder.start(step);
                 }
             });
-
-            if (stepBuilder[0] != null) {
-                createJob(sourceKeys, -1, jobName, stepBuilder[0]);
-            }
         }
+        return stepBuilder[0];
     }
 
-    private long[] getBucketSizes(List<Source> vocabularySources) {
-        int jobCount = cacheJobsCount;
-        long bucketSize, size = vocabularySources.size();
-        long[] bucketSizes = new long[cacheJobsCount];
-        // Get sizes of all buckets so that their values are approximately equal
-        while (jobCount > 0) {
-            if (jobCount > 1) {
-                bucketSize = Math.round(Math.floor(size * 1.0 / jobCount));
-            } else {
-                bucketSize = size;
-            }
-            bucketSizes[cacheJobsCount - jobCount] = bucketSize;
-            jobCount--;
-            size -= bucketSize;
-        }
-        return bucketSizes;
-    }
-
-    private JobExecutionResource createJob(String sourceKey, int sourceId, String jobName, SimpleJobBuilder stepBuilder) {
+    /*
+     * Runs the job and returns the JobExecutionResource
+    */
+    private JobExecutionResource runJob(String sourceKey, int sourceId, String jobName, SimpleJobBuilder stepBuilder) {
         return jobService.runJob(stepBuilder.build(), new JobParametersBuilder()
                 .addString(Constants.Params.JOB_NAME, jobName)
-                .addString(Constants.Params.SOURCE_KEY, sourceKey)
+
+                // batch_job_execution_params.string_val is varchar(250). too many source keys can exceed 250 symbols
+                .addString(Constants.Params.SOURCE_KEY, StringUtils.substring(sourceKey, 0, 250))
+
                 .addString(Constants.Params.SOURCE_ID, String.valueOf(sourceId))
                 .toJobParameters());
+    }
+    
+    private List<Step> createCacheWarmingJobSteps(Source source, String jobName) {
+        int resultDaimonPriority = getResultsDaimonPriority(source);
+        SimpleJob job = new SimpleJob(jobName);
+        job.setJobRepository(jobRepository);
+        List<Step> steps = new ArrayList<>();
+        
+        if (cdmAchillesCacheWarmingEnable) {
+            steps.add(getAchillesStep(source, jobName));
+        }
+        if (resultDaimonPriority > 0) {
+            steps.add(getCountStep(source, jobName));
+        }
+        return steps;
     }
 
     private Step getAchillesStep(Source source, String jobStepName) {
@@ -538,7 +566,7 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
                 .build();
     }
 
-    private int getPriority(Source source) {
+    private int getResultsDaimonPriority(Source source) {
         Optional<Integer> resultsPriority = source.getDaimons().stream()
                 .filter(d -> d.getDaimonType().equals(SourceDaimon.DaimonType.Results))
                 .map(SourceDaimon::getPriority)
@@ -547,16 +575,37 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
         return resultsPriority.orElse(0);
     }
 
-    private String getWarmCacheJobName(String sourceKey) {
-        return String.format("warming cache: %s", sourceKey);
-    }
-
     private String getWarmCacheJobName(String sourceIds, String sourceKeys) {
         // for multiple sources: try to compose a job name from source keys, and if it is too long - use source ids
         String jobName = String.format("warming cache: %s", sourceKeys);
+
         if (jobName.length() >= 100) { // job name in batch_job_instance is varchar(100)
             jobName = String.format("warming cache: %s", sourceIds);
+
+            if (jobName.length() >= 100) { // if we still have more than 100 symbols
+                jobName = jobName.substring(0, 88);
+                jobName = jobName.substring(0, jobName.lastIndexOf(','))
+                        .concat(" and more..."); // todo: this is quick fix. need better solution
+            }
         }
         return jobName;
+    }
+    
+    private long[] getBucketSizes(List<Source> vocabularySources) {
+        int jobCount = cacheJobsCount;
+        long bucketSize, size = vocabularySources.size();
+        long[] bucketSizes = new long[cacheJobsCount];
+        // Get sizes of all buckets so that their values are approximately equal
+        while (jobCount > 0) {
+            if (jobCount > 1) {
+                bucketSize = Math.round(Math.floor(size * 1.0 / jobCount));
+            } else {
+                bucketSize = size;
+            }
+            bucketSizes[cacheJobsCount - jobCount] = bucketSize;
+            jobCount--;
+            size -= bucketSize;
+        }
+        return bucketSizes;
     }
 }
