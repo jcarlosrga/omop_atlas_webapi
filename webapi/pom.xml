@@ -157,6 +157,7 @@
     <security.google.accessToken.enabled>false</security.google.accessToken.enabled>
 
     <security.cors.enabled>true</security.cors.enabled>
+    <security.origin>*</security.origin>
     <security.maxLoginAttempts>3</security.maxLoginAttempts>
     <security.duration.initial>10</security.duration.initial>
     <security.duration.increment>10</security.duration.increment>
