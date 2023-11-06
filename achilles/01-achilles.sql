@@ -10121,7 +10121,7 @@ FROM (
 CREATE TABLE temp.s_tmpach_2001(analysis_id INT,stratum_1 VARCHAR(255),stratum_2 VARCHAR(255),stratum_3 VARCHAR(255),stratum_4 VARCHAR(255),stratum_5 VARCHAR(255),count_value NUMERIC);
 INSERT INTO temp.s_tmpach_2001(analysis_id,stratum_1,stratum_2,stratum_3,stratum_4,stratum_5,count_value)
 SELECT
-    2000 AS analysis_id,
+    2001 AS analysis_id,
     CAST(NULL AS VARCHAR(255)) AS stratum_1,
     CAST(NULL AS VARCHAR(255)) AS stratum_2,
     CAST(NULL AS VARCHAR(255)) AS stratum_3,
