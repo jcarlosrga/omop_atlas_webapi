@@ -7334,10 +7334,10 @@ FROM
                 vo.visit_start_date >= op.observation_period_start_date
             AND
                 vo.visit_start_date <= op.observation_period_end_date
---WHERE
---    vo.discharge_to_concept_id != 0
---GROUP BY
---	vo.discharge_to_concept_id;
+WHERE
+    vo.discharged_to_concept_id != 0
+GROUP BY
+	vo.discharged_to_concept_id;
 
 -- 1300	Number of persons with at least one visit detail, by visit_detail_concept_id
 -- restricted to visits overlapping with observation period
